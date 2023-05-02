@@ -21,12 +21,12 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "LOCATION_TYPE", nullable = false, length = 50)
+    @Column(name = "location_type", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     LocationType type;
 
-    @Column(name = "LOCATION_PARAMTERS", nullable = false)
-    JsonNode parameters;
+    @Column(name = "location_parameters", nullable = false)
+    String parameters;
 
     @Column(name = "dat_creation", nullable = false)
     LocalDateTime createdAt;

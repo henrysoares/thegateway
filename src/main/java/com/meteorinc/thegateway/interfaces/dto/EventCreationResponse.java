@@ -20,15 +20,12 @@ import java.util.UUID;
 @Builder
 public class EventCreationResponse implements Serializable {
 
-
     String eventName;
 
     UUID ownerCode;
 
     String eventDescription;
-
-    LocalDateTime creationDate;
-
+    
     LocalDateTime startsAt;
 
     @NotNull

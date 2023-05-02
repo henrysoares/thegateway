@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    username: postgres
+    password: gateway123
+    url: jdbc:postgresql://localhost:5432/GATEWAY_DB
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE

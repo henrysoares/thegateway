@@ -1,28 +1,39 @@
-CREATE TABLE LOCATION (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    LOCATION_TYPE VARCHAR(50) NOT NULL,
-    LOCATION_PARAMETERS JSONB NOT NULL,
-    dat_creation TIMESTAMP NOT NULL,
-    dat_update TIMESTAMP NOT NULL
+CREATE TABLE location (
+  id SERIAL PRIMARY KEY,
+  location_type VARCHAR(50) NOT NULL,
+  location_parameters JSONB NOT NULL,
+  dat_creation TIMESTAMP NOT NULL,
+  dat_update TIMESTAMP NOT NULL
 );
 
-CREATE TABLE EVENT (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    event_name VARCHAR(100) NOT NULL,
-    event_owner_code UUID NOT NULL,
-    event_description TEXT NOT NULL,
-    dat_creation TIMESTAMP NOT NULL,
-    dat_update TIMESTAMP NOT NULL,
-    location_id BIGINT,
-    FOREIGN KEY (location_id) REFERENCES LOCATION(id)
+CREATE TABLE event (
+  id SERIAL PRIMARY KEY,
+  event_name VARCHAR(100) NOT NULL,
+  event_owner_code UUID NOT NULL,
+  event_description TEXT NOT NULL,
+  dat_start TIMESTAMP,
+  dat_finishing TIMESTAMP,
+  dat_creation TIMESTAMP NOT NULL,
+  dat_update TIMESTAMP NOT NULL,
+  location_id INTEGER,
+  FOREIGN KEY (location_id) REFERENCES location (id)
 );
 
-CREATE TABLE USER_EVENT (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    USER_ID BIGINT NOT NULL,
-    EVENT_ID BIGINT NOT NULL,
-    dat_check_in TIMESTAMP NOT NULL,
-    dat_check_out TIMESTAMP NOT NULL,
-    FOREIGN KEY (USER_ID) REFERENCES USER(id),
-    FOREIGN KEY (EVENT_ID) REFERENCES EVENT(id)
+CREATE TABLE "user" (
+  id SERIAL PRIMARY KEY,
+  user_code UUID NOT NULL,
+  user_email VARCHAR(100) NOT NULL,
+  user_password VARCHAR(100) NOT NULL,
+  dat_creation TIMESTAMP NOT NULL,
+  dat_update TIMESTAMP NOT NULL
+);
+
+CREATE TABLE user_event (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  event_id INTEGER NOT NULL,
+  dat_check_in TIMESTAMP NOT NULL,
+  dat_check_out TIMESTAMP NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES "user" (id),
+  FOREIGN KEY (event_id) REFERENCES event (id)
 );
