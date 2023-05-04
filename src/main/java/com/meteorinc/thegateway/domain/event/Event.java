@@ -1,10 +1,7 @@
 package com.meteorinc.thegateway.domain.event;
 
 import com.meteorinc.thegateway.domain.location.Location;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
@@ -12,13 +9,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Getter
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "EVENT")
+@Table(name = "location")
 public class Event {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

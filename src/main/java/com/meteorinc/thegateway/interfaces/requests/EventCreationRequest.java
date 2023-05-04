@@ -17,27 +17,18 @@ import java.time.LocalDateTime;
 public class EventCreationRequest implements Serializable {
 
     @NotNull
-    @NotBlank
     LocationCreationRequest location;
 
     @NotNull
-    @NotBlank
     String name;
 
-    @NotNull
     @NotBlank
     String description;
 
     @NotNull
-    @NotBlank
     LocalDateTime startingDate;
 
     @NotNull
-    @NotBlank
     double durationHours;
-
-    @NotNull
-    @NotBlank
-    LocalDateTime creationDate;
 
 }
