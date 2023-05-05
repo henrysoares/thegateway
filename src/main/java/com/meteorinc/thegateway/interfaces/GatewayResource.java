@@ -1,7 +1,9 @@
 package com.meteorinc.thegateway.interfaces;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.meteorinc.thegateway.domain.event.Event;
-import com.meteorinc.thegateway.domain.event.EventService;
+import com.meteorinc.thegateway.application.event.EventService;
+import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.interfaces.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.requests.EventCreationRequest;
 import lombok.AllArgsConstructor;
@@ -27,9 +29,14 @@ public class GatewayResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request, UUID.randomUUID()));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Event>> createEvent(){
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.findAllEvents());
+    @GetMapping("/{eventCode}")
+    public ResponseEntity<EventDTO> findEvent(@PathVariable("eventCode") UUID eventCode) throws JsonProcessingException {
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.findEvent(eventCode));
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<EventDTO>> findAllEvents(){
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.findAllEvents());
     }
 
 }

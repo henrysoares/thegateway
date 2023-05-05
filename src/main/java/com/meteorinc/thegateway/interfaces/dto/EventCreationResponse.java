@@ -24,6 +24,8 @@ public class EventCreationResponse implements Serializable {
 
     UUID ownerCode;
 
+    UUID eventCode;
+
     String eventDescription;
     
     LocalDateTime startsAt;

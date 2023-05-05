@@ -1,5 +1,9 @@
-package com.meteorinc.thegateway.domain.event;
+package com.meteorinc.thegateway.application.event;
 
+import com.meteorinc.thegateway.application.event.exceptions.EventNotFoundException;
+import com.meteorinc.thegateway.domain.event.Event;
+import com.meteorinc.thegateway.domain.event.EventDTO;
+import com.meteorinc.thegateway.domain.event.EventRepository;
 import com.meteorinc.thegateway.domain.location.Location;
 import com.meteorinc.thegateway.interfaces.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.requests.EventCreationRequest;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -46,10 +51,11 @@ public class EventService {
             final Event event = Event.builder()
                     .name(eventCreationRequest.getName())
                     .ownerCode(ownerCode)
+                    .eventCode(UUID.randomUUID())
                     .location(location)
                     .description(eventCreationRequest.getDescription())
                     .startsAt(eventCreationRequest.getStartingDate())
-                    .finishAt(eventCreationRequest.getStartingDate()
+                    .finishesAt(eventCreationRequest.getStartingDate()
                             .plusSeconds(convertToSeconds(duration)))
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
@@ -59,10 +65,11 @@ public class EventService {
 
             return EventCreationResponse.builder()
                     .eventName(event.getName())
+                    .eventCode(event.getEventCode())
                     .eventDescription(event.getDescription())
                     .ownerCode(event.getOwnerCode())
                     .startsAt(event.getStartsAt())
-                    .finishesAt(event.getFinishAt())
+                    .finishesAt(event.getFinishesAt())
                     .location(event.getLocation().toDTO())
                     .build();
 
@@ -73,8 +80,12 @@ public class EventService {
 
     }
 
-    public List<Event> findAllEvents(){
-        return eventRepository.findAll();
+    public List<EventDTO> findAllEvents(){
+        return eventRepository.findAll().stream().map(Event::toDTO).collect(Collectors.toList());
+    }
+
+    public EventDTO findEvent(@NonNull final UUID eventCode){
+        return eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new).toDTO();
     }
 
     private long convertToSeconds(double duration){

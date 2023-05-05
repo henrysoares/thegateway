@@ -20,10 +20,22 @@ public class EventDTO implements Serializable {
     UUID ownerCode;
 
     @NonNull
+    UUID EventCode;
+
+    @NonNull
     String eventDescription;
 
     @NonNull
     LocalDateTime startsAt;
+
+    @NonNull
+    LocalDateTime finishesAt;
+
+    @NonNull
+    LocalDateTime createdAt;
+
+    @NonNull
+    LocalDateTime updatedAt;
 
     LocationDTO location;
 

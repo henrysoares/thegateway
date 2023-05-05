@@ -1,8 +1,8 @@
 package com.meteorinc.thegateway.domain.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.domain.location.Location;
+import com.meteorinc.thegateway.infrastructure.converter.UUIDEntityConverter;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -26,7 +26,12 @@ public class Event {
     @Column(name = "event_name", nullable = false, length = 100)
     String name;
 
+    @Column(name = "event_code", nullable = false, length = 36)
+    @Convert(converter = UUIDEntityConverter.class)
+    UUID eventCode;
+
     @Column(name = "event_owner_code", nullable = false, length = 36)
+    @Convert(converter = UUIDEntityConverter.class)
     UUID ownerCode;
 
     @Column(name = "event_description", nullable = false)
@@ -36,7 +41,7 @@ public class Event {
     LocalDateTime startsAt;
 
     @Column(name = "dat_finishing")
-    LocalDateTime finishAt;
+    LocalDateTime finishesAt;
 
     @Column(name = "dat_creation", nullable = false)
     LocalDateTime createdAt;
@@ -44,19 +49,28 @@ public class Event {
     @Column(name = "dat_update", nullable = false)
     LocalDateTime updatedAt;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id")
     Location location;
 
 
-    public EventDTO toDTO() throws JsonProcessingException {
+    public EventDTO toDTO() {
 
-        return EventDTO.builder()
-                .eventName(this.name)
-                .eventDescription(this.description)
-                .ownerCode(this.ownerCode)
-                .startsAt(this.startsAt)
-                .location(this.location.toDTO())
-                .build();
+        try {
+            return EventDTO.builder()
+                    .eventName(this.name)
+                    .eventDescription(this.description)
+                    .ownerCode(this.ownerCode)
+                    .EventCode(this.eventCode)
+                    .startsAt(this.startsAt)
+                    .finishesAt(this.finishesAt)
+                    .location(this.location.toDTO())
+                    .createdAt(this.createdAt)
+                    .updatedAt(this.updatedAt)
+                    .build();
+        }catch (Exception exception){
+            //TODO: Melhorar exception handling.
+            throw new RuntimeException("Não foi possivel realizar a converesão para DTO.");
+        }
     }
 }

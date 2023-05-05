@@ -9,7 +9,8 @@ CREATE TABLE location (
 CREATE TABLE event (
   id SERIAL PRIMARY KEY,
   event_name VARCHAR(100) NOT NULL,
-  event_owner_code UUID NOT NULL,
+  event_code VARCHAR(36) NOT NULL,
+  event_owner_code VARCHAR(36) NOT NULL,
   event_description TEXT NOT NULL,
   dat_start TIMESTAMP,
   dat_finishing TIMESTAMP,
@@ -21,7 +22,7 @@ CREATE TABLE event (
 
 CREATE TABLE "user" (
   id SERIAL PRIMARY KEY,
-  user_code UUID NOT NULL,
+  user_code VARCHAR(36) NOT NULL,
   user_email VARCHAR(100) NOT NULL,
   user_password VARCHAR(100) NOT NULL,
   dat_creation TIMESTAMP NOT NULL,
