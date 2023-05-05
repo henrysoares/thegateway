@@ -1,5 +1,7 @@
 package com.meteorinc.thegateway.domain.event;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.domain.location.Location;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +16,7 @@ import java.util.UUID;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "location")
+@Table(name = "event")
 public class Event {
 
     @Id
@@ -47,4 +49,14 @@ public class Event {
     Location location;
 
 
+    public EventDTO toDTO() throws JsonProcessingException {
+
+        return EventDTO.builder()
+                .eventName(this.name)
+                .eventDescription(this.description)
+                .ownerCode(this.ownerCode)
+                .startsAt(this.startsAt)
+                .location(this.location.toDTO())
+                .build();
+    }
 }

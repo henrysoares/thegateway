@@ -1,7 +1,7 @@
 package com.meteorinc.thegateway.interfaces.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.meteorinc.thegateway.interfaces.requests.LocationCreationRequest;
+import com.meteorinc.thegateway.domain.location.LocationDTO;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,9 +28,11 @@ public class EventCreationResponse implements Serializable {
     
     LocalDateTime startsAt;
 
+    LocalDateTime finishesAt;
+
     @NotNull
     @NotBlank
-    LocationCreationRequest location;
+    LocationDTO location;
 
 
 }

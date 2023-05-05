@@ -1,6 +1,7 @@
 package com.meteorinc.thegateway.domain.event;
 
 import com.meteorinc.thegateway.domain.location.Location;
+import com.meteorinc.thegateway.interfaces.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.requests.EventCreationRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,13 +31,14 @@ public class EventService {
      * @param eventCreationRequest
      * @return
      */
-    public Event createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final UUID ownerCode){
+    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final UUID ownerCode){
+        try {
             final double duration = eventCreationRequest.getDurationHours() == 0 ?
                     DEFAULT_DURATION : eventCreationRequest.getDurationHours();
 
             final Location location = Location.builder()
                     .type(eventCreationRequest.getLocation().getType())
-                    .parameters(eventCreationRequest.getLocation().getParameters().asText())
+                    .parameters(eventCreationRequest.getLocation().getParameters().toString())
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
@@ -55,7 +57,20 @@ public class EventService {
 
             eventRepository.save(event);
 
-            return event;
+            return EventCreationResponse.builder()
+                    .eventName(event.getName())
+                    .eventDescription(event.getDescription())
+                    .ownerCode(event.getOwnerCode())
+                    .startsAt(event.getStartsAt())
+                    .finishesAt(event.getFinishAt())
+                    .location(event.getLocation().toDTO())
+                    .build();
+
+        }
+        catch (Exception exception){
+            throw new RuntimeException();
+        }
+
     }
 
     public List<Event> findAllEvents(){

@@ -24,13 +24,7 @@ public class GatewayResource {
 
     @PostMapping("/event")
     public ResponseEntity<EventCreationResponse> createEvent(@RequestBody @NonNull @Valid EventCreationRequest request){
-        final Event event = eventService.createEvent(request, UUID.randomUUID());
-
-        final EventCreationResponse response = EventCreationResponse.builder()
-                .eventName(event.getName())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request, UUID.randomUUID()));
     }
 
     @GetMapping
