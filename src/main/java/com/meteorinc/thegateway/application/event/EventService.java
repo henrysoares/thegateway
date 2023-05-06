@@ -43,7 +43,7 @@ public class EventService {
 
             final Location location = Location.builder()
                     .type(eventCreationRequest.getLocation().getType())
-                    .parameters(eventCreationRequest.getLocation().getParameters().toString())
+                    .metadata(eventCreationRequest.getLocation().getMetadata().toString())
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();

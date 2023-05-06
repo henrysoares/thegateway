@@ -24,6 +24,6 @@ public class LocationCreationRequest {
 
     @NotNull
     @JsonDeserialize(as = ObjectNode.class)
-    JsonNode parameters;
+    JsonNode metadata;
 
 }

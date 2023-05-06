@@ -29,8 +29,8 @@ public class Location {
     @Enumerated(EnumType.STRING)
     LocationType type;
 
-    @Column(name = "location_parameters", nullable = false)
-    String parameters;
+    @Column(name = "location_metadata", nullable = false)
+    String metadata;
 
     @Column(name = "dat_creation", nullable = false)
     LocalDateTime createdAt;
@@ -47,7 +47,7 @@ public class Location {
 
         return LocationDTO.builder()
                 .type(type)
-                .parameters(mapper.readTree(parameters))
+                .metadata(mapper.readTree(metadata))
                 .build();
     }
 

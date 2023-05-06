@@ -1,7 +1,7 @@
 CREATE TABLE location (
   id SERIAL PRIMARY KEY,
   location_type VARCHAR(50) NOT NULL,
-  location_parameters VARCHAR(255) NOT NULL,
+  location_metadata VARCHAR(255) NOT NULL,
   dat_creation TIMESTAMP NOT NULL,
   dat_update TIMESTAMP NOT NULL
 );

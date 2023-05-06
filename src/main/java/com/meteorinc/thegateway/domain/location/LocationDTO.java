@@ -15,6 +15,6 @@ public class LocationDTO implements Serializable {
     LocationType type;
 
     @NonNull
-    JsonNode parameters;
+    JsonNode metadata;
 
 }
