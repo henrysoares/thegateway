@@ -1,6 +1,13 @@
 package com.meteorinc.thegateway.domain.user;
 
+import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+import java.util.Optional;
+import java.util.UUID;
+
+public interface UserRepository extends JpaRepository<AppUser, Long> {
+    Optional<AppUser> findByEmail(@NonNull final String email);
+
+    Optional<AppUser> findByUserCode(@NonNull final UUID userCode);
 }

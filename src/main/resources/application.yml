@@ -9,3 +9,13 @@ spring:
 
   jpa:
     show-sql: true
+
+root-user:
+  initialize: true
+  details:
+    email: "root@root.com"
+    name: "root"
+
+jwt:
+  secret: "TH3GAT3WaY" #ideal seria um config server
+  expiration-minutes: 120

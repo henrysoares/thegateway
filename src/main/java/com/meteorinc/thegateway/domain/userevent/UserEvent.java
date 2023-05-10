@@ -1,7 +1,7 @@
 package com.meteorinc.thegateway.domain.userevent;
 
 import com.meteorinc.thegateway.domain.event.Event;
-import com.meteorinc.thegateway.domain.user.User;
+import com.meteorinc.thegateway.domain.user.AppUser;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +23,7 @@ public class UserEvent {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "USER_ID")
-    User user;
+    AppUser appUser;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "EVENT_ID")

@@ -1,4 +1,4 @@
-package com.meteorinc.thegateway.interfaces.dto;
+package com.meteorinc.thegateway.interfaces.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.meteorinc.thegateway.domain.location.LocationDTO;

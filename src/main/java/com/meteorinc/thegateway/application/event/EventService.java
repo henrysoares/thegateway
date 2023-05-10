@@ -1,12 +1,13 @@
 package com.meteorinc.thegateway.application.event;
 
 import com.meteorinc.thegateway.application.event.exceptions.EventNotFoundException;
+import com.meteorinc.thegateway.application.user.TokenService;
 import com.meteorinc.thegateway.domain.event.Event;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.event.EventRepository;
 import com.meteorinc.thegateway.domain.location.Location;
-import com.meteorinc.thegateway.interfaces.dto.EventCreationResponse;
-import com.meteorinc.thegateway.interfaces.requests.EventCreationRequest;
+import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
+import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -30,13 +31,15 @@ public class EventService {
 
     EventRepository eventRepository;
 
+    TokenService tokenService;
+
     /**
      * Faz a criação do evento a partir do objeto {@link EventCreationRequest}
      *
      * @param eventCreationRequest
      * @return
      */
-    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final UUID ownerCode){
+    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final String creatorToken){
         try {
             final double duration = eventCreationRequest.getDurationHours() == 0 ?
                     DEFAULT_DURATION : eventCreationRequest.getDurationHours();
@@ -47,6 +50,8 @@ public class EventService {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
+
+            final UUID ownerCode = UUID.fromString(tokenService.getUserCodeOnToken(TokenService.formatToken(creatorToken)));
 
             final Event event = Event.builder()
                     .name(eventCreationRequest.getName())

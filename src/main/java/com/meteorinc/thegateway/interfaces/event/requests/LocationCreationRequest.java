@@ -1,4 +1,4 @@
-package com.meteorinc.thegateway.interfaces.requests;
+package com.meteorinc.thegateway.interfaces.event.requests;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
