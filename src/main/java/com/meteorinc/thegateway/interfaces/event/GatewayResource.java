@@ -39,6 +39,11 @@ public class GatewayResource {
         return ResponseEntity.status(HttpStatus.OK).body(eventService.findEvent(eventCode));
     }
 
+    @GetMapping("/owner")
+    public ResponseEntity<List<EventDTO>> findEvent(@NonNull @RequestHeader("Authorization") final String token)  {
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.findEvents(token));
+    }
+
     @GetMapping
     public ResponseEntity<List<EventDTO>> findAllEvents(){
         return ResponseEntity.status(HttpStatus.OK).body(eventService.findAllEvents());

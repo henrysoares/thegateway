@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -83,6 +84,13 @@ public class EventService {
             throw new RuntimeException();
         }
 
+    }
+
+    public List<EventDTO> findEvents(@NonNull final String token){
+
+        String userCode = tokenService.getUserCodeOnToken(token);
+
+        return eventRepository.findByOwnerCode(UUID.fromString(userCode)).orElse(Collections.emptyList()).stream().map(Event::toDTO).collect(Collectors.toList());
     }
 
     public List<EventDTO> findAllEvents(){
