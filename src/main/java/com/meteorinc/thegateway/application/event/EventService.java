@@ -2,10 +2,13 @@ package com.meteorinc.thegateway.application.event;
 
 import com.meteorinc.thegateway.application.event.exceptions.EventNotFoundException;
 import com.meteorinc.thegateway.application.user.TokenService;
+import com.meteorinc.thegateway.domain.checkin.CheckIn;
 import com.meteorinc.thegateway.domain.event.Event;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.event.EventRepository;
 import com.meteorinc.thegateway.domain.location.Location;
+import com.meteorinc.thegateway.domain.user.AppUser;
+import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
 import lombok.AccessLevel;
@@ -40,7 +43,7 @@ public class EventService {
      * @param eventCreationRequest
      * @return
      */
-    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final String creatorToken){
+    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final UUID ownerCode){
         try {
             final double duration = eventCreationRequest.getDurationHours() == 0 ?
                     DEFAULT_DURATION : eventCreationRequest.getDurationHours();
@@ -51,8 +54,6 @@ public class EventService {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
-
-            final UUID ownerCode = UUID.fromString(tokenService.getUserCodeOnToken(TokenService.formatToken(creatorToken)));
 
             final Event event = Event.builder()
                     .name(eventCreationRequest.getName())
@@ -86,19 +87,19 @@ public class EventService {
 
     }
 
-    public List<EventDTO> findEvents(@NonNull final String token){
+    public List<EventDTO> findEvents(@NonNull final AppUser user){
 
-        String userCode = tokenService.getUserCodeOnToken(token);
 
-        return eventRepository.findByOwnerCode(UUID.fromString(userCode)).orElse(Collections.emptyList()).stream().map(Event::toDTO).collect(Collectors.toList());
+        return eventRepository.findByOwnerCode(UUID.fromString(user.getUserCode().toString()))
+                .orElse(Collections.emptyList()).stream().map(Event::toDTO).collect(Collectors.toList());
     }
 
     public List<EventDTO> findAllEvents(){
         return eventRepository.findAll().stream().map(Event::toDTO).collect(Collectors.toList());
     }
 
-    public EventDTO findEvent(@NonNull final UUID eventCode){
-        return eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new).toDTO();
+    public Event findEvent(@NonNull final UUID eventCode){
+        return eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new);
     }
 
     private long convertToSeconds(double duration){

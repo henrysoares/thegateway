@@ -1,10 +1,12 @@
 package com.meteorinc.thegateway.interfaces.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.meteorinc.thegateway.application.GatewayEventFacade;
 import com.meteorinc.thegateway.application.qrcode.QRCodeService;
 import com.meteorinc.thegateway.application.event.EventService;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.user.RoleType;
+import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
 import lombok.AllArgsConstructor;
@@ -20,46 +22,46 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
-@RequestMapping("/api/gateway")
+@RequestMapping("/api/gateway/event")
 @RestController
 @AllArgsConstructor(onConstructor_ = @Autowired)
 public class GatewayResource {
 
-    EventService eventService;
+    GatewayEventFacade gatewayEventFacade;
 
-    QRCodeService qrCodeService;
-
-    @PostMapping("/event")
+    @RolesAllowed("ADMIN_ROLE")
+    @PostMapping
     public ResponseEntity<EventCreationResponse> createEvent(@NonNull @RequestHeader("Authorization") final String token,@RequestBody @NonNull @Valid EventCreationRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request, token));
+        return ResponseEntity.status(HttpStatus.CREATED).body(gatewayEventFacade.createEvent(request, token));
     }
 
     @GetMapping("/{eventCode}")
     public ResponseEntity<EventDTO> findEvent(@PathVariable("eventCode") UUID eventCode) throws JsonProcessingException {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.findEvent(eventCode));
+        return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findEvent(eventCode));
     }
 
     @GetMapping("/owner")
     public ResponseEntity<List<EventDTO>> findEvent(@NonNull @RequestHeader("Authorization") final String token)  {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.findEvents(token));
+        return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findEvents(token));
     }
 
     @GetMapping
     public ResponseEntity<List<EventDTO>> findAllEvents(){
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.findAllEvents());
+        return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findAllEvents());
     }
 
     @RolesAllowed("ADMIN_ROLE")
     @GetMapping(value = "/generate-qrcode/{eventCode}", produces = MediaType.IMAGE_PNG_VALUE)
     public byte[] generateQRCode(@PathVariable("eventCode") UUID eventCode){
-        return qrCodeService.generateQRCode(eventCode);
+        return gatewayEventFacade.generateQRCode(eventCode);
     }
 
-/*
-    @PostMapping("/check-in")
-    public ResponseEntity<> findAllEvents(){
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.findAllEvents());
-    }*/
+
+    @GetMapping("/check-in/{eventCode}")
+    public ResponseEntity<Void> findAllEvents(@NonNull @RequestHeader("Authorization") final String token, @PathVariable("eventCode") UUID eventCode){
+        gatewayEventFacade.doCheckIn(token, eventCode);
+        return ResponseEntity.ok().build();
+    }
 
 
 }

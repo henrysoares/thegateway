@@ -40,6 +40,19 @@ CREATE TABLE ROLE (
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES APP_USER (id)
 );
 
+CREATE TABLE check_in (
+  id SERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  event_id BIGINT NOT NULL,
+  dat_check_in TIMESTAMP NOT NULL,
+  dat_check_out TIMESTAMP,
+  dat_creation TIMESTAMP NOT NULL,
+  dat_update TIMESTAMP NOT NULL,
+  CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES app_user (id),
+  CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES event (id)
+);
+
+
 CREATE TABLE user_event (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,

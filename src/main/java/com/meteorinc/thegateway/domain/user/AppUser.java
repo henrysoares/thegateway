@@ -1,5 +1,6 @@
 package com.meteorinc.thegateway.domain.user;
 
+import com.meteorinc.thegateway.infrastructure.converter.UUIDEntityConverter;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +28,7 @@ public class AppUser implements UserDetails {
     Long id;
 
     @Column(name = "user_code", nullable = false, length = 36)
+    @Convert(converter = UUIDEntityConverter.class)
     UUID userCode;
 
     @Column(name = "user_email", nullable = false, length = 100)
