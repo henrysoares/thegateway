@@ -1,9 +1,6 @@
 package com.meteorinc.thegateway.infrastructure.security;
 
-import com.auth0.jwt.algorithms.Algorithm;
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,6 +30,7 @@ public class SecurityConfig {
                 .and().authorizeHttpRequests()
                 .antMatchers(HttpMethod.POST, "/api/gateway/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/gateway/user/**").permitAll()
+                //.antMatchers(HttpMethod.POST, "/api/gateway/event").hasRole("ADMIN_ROLE")
                 .anyRequest()
                 .authenticated().and().addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
                 .build();

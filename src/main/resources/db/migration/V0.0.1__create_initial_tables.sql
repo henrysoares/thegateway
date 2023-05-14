@@ -23,6 +23,18 @@ CREATE TABLE event (
   FOREIGN KEY (location_id) REFERENCES location (id)
 );
 
+CREATE TABLE certificate (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  certificate_code VARCHAR(36) NOT NULL,
+  certificate_description TEXT NOT NULL,
+  certificate_content BYTEA,
+  certificate_metadata VARCHAR(255) NOT NULL,
+  dat_creation TIMESTAMP NOT NULL,
+  dat_update TIMESTAMP NOT NULL,
+  event_id BIGINT,
+  CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES event (id)
+);
+
 CREATE TABLE APP_USER (
   id SERIAL PRIMARY KEY,
   user_code VARCHAR(36) NOT NULL,

@@ -53,6 +53,11 @@ public class RootUserService {
     public void initRootUser(){
         if(!isRootUserEnabled) return;
 
+        if(!isCustomPasswordEnabled){
+            if(userRepository.findByEmail(rootEmail).isPresent()){
+                return;
+            }
+        }
         userRepository.findByEmail(rootEmail).ifPresent(userRepository::delete);
 
         final String rootPassword = this.isCustomPasswordEnabled ? password : UUID.randomUUID().toString();
@@ -68,8 +73,7 @@ public class RootUserService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        final List<Role> rootRoles = List.of(Role.initializeRole(user, RoleType.ADMIN_ROLE),
-                Role.initializeRole(user, RoleType.USER_ROLE));
+        final List<Role> rootRoles = List.of(Role.initializeRole(user, RoleType.ADMIN_ROLE));
 
         user.setRoles(rootRoles);
 

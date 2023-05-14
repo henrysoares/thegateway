@@ -10,6 +10,11 @@ spring:
   jpa:
     show-sql: true
 
+
+  servlet:
+    multipart:
+      location: "./certs"
+
 root-user:
   initialize: true
   custom-password: true
@@ -17,6 +22,8 @@ root-user:
     email: "root@root.com"
     name: "root"
     password: "test"
+
 jwt:
   secret: "TH3GAT3WaY" #ideal seria um config server
   expiration-minutes: 120
+

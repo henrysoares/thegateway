@@ -56,6 +56,9 @@ public class Event {
     @JoinColumn(name = "location_id")
     Location location;
 
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    Certificate certificate;
+
 
     public EventDTO toDTO() {
 
