@@ -8,6 +8,7 @@ import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.user.RoleType;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
+import com.meteorinc.thegateway.interfaces.event.requests.CheckInRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -57,9 +58,11 @@ public class GatewayResource {
     }
 
 
-    @GetMapping("/check-in/{eventCode}")
-    public ResponseEntity<Void> findAllEvents(@NonNull @RequestHeader("Authorization") final String token, @PathVariable("eventCode") UUID eventCode){
-        gatewayEventFacade.doCheckIn(token, eventCode);
+    @PostMapping("/check-in/{eventCode}")
+    public ResponseEntity<Void> findAllEvents(@NonNull @RequestHeader("Authorization") final String token,
+                                              @PathVariable("eventCode") UUID eventCode,
+                                              @RequestBody @NonNull final CheckInRequest request){
+        gatewayEventFacade.doCheckIn(token, eventCode, request);
         return ResponseEntity.ok().build();
     }
 

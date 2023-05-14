@@ -8,6 +8,7 @@ import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.user.AppUser;
 import com.meteorinc.thegateway.domain.user.AppUserService;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
+import com.meteorinc.thegateway.interfaces.event.requests.CheckInRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -53,12 +54,12 @@ public class GatewayEventFacade {
     }
 
 
-    public void doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode){
+    public void doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode, @NonNull final CheckInRequest request){
 
         final AppUser user = appUserService.findUserByToken(rawToken);
         final Event event = eventService.findEvent(eventCode);
 
-        checkInService.doCheckIn(user, event);
+        checkInService.doCheckIn(user, event, request);
     }
 
 }

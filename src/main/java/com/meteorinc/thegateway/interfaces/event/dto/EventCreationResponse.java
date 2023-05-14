@@ -27,6 +27,8 @@ public class EventCreationResponse implements Serializable {
     UUID eventCode;
 
     String eventDescription;
+
+    boolean isNetworkValidationEnabled;
     
     LocalDateTime startsAt;
 

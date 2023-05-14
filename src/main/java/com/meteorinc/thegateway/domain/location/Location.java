@@ -3,10 +3,7 @@ package com.meteorinc.thegateway.domain.location;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.domain.event.Event;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
@@ -16,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "LOCATION")
@@ -28,6 +26,12 @@ public class Location {
     @Column(name = "location_type", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     LocationType type;
+
+    @Column(name = "location_latitude", nullable = false)
+    String latitude;
+
+    @Column(name = "location_longitude", nullable = false)
+    String longitude;
 
     @Column(name = "location_metadata", nullable = false)
     String metadata;
@@ -47,6 +51,8 @@ public class Location {
 
         return LocationDTO.builder()
                 .type(type)
+                .latitude(latitude)
+                .longitude(longitude)
                 .metadata(mapper.readTree(metadata))
                 .build();
     }

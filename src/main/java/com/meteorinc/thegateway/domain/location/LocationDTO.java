@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Data
@@ -13,6 +15,15 @@ public class LocationDTO implements Serializable {
 
     @NonNull
     LocationType type;
+
+    @NotNull
+    @NotBlank
+    String latitude;
+
+    @NotNull
+    @NotBlank
+    String longitude;
+
 
     @NonNull
     JsonNode metadata;

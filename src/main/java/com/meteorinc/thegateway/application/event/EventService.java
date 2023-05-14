@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 @AllArgsConstructor(onConstructor_ = @Autowired)
 public class EventService {
 
@@ -51,6 +53,8 @@ public class EventService {
             final Location location = Location.builder()
                     .type(eventCreationRequest.getLocation().getType())
                     .metadata(eventCreationRequest.getLocation().getMetadata().toString())
+                    .latitude(eventCreationRequest.getLocation().getLatitude())
+                    .longitude(eventCreationRequest.getLocation().getLongitude())
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
@@ -60,6 +64,7 @@ public class EventService {
                     .ownerCode(ownerCode)
                     .eventCode(UUID.randomUUID())
                     .location(location)
+                    .isNetWorkValidationAvailable(eventCreationRequest.isNetworkValidationEnabled())
                     .description(eventCreationRequest.getDescription())
                     .startsAt(eventCreationRequest.getStartingDate())
                     .finishesAt(eventCreationRequest.getStartingDate()
@@ -74,6 +79,7 @@ public class EventService {
                     .eventName(event.getName())
                     .eventCode(event.getEventCode())
                     .eventDescription(event.getDescription())
+                    .isNetworkValidationEnabled(event.isNetWorkValidationAvailable())
                     .ownerCode(event.getOwnerCode())
                     .startsAt(event.getStartsAt())
                     .finishesAt(event.getFinishesAt())
@@ -82,6 +88,7 @@ public class EventService {
 
         }
         catch (Exception exception){
+            log.error("Was not possible to create the event.", exception);
             throw new RuntimeException();
         }
 

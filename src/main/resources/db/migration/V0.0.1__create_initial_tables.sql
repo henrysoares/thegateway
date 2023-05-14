@@ -1,6 +1,8 @@
 CREATE TABLE location (
   id SERIAL PRIMARY KEY,
   location_type VARCHAR(50) NOT NULL,
+  location_longitude VARCHAR(100) NOT NULL,
+  location_latitude VARCHAR(100) NOT NULL,
   location_metadata VARCHAR(255) NOT NULL,
   dat_creation TIMESTAMP NOT NULL,
   dat_update TIMESTAMP NOT NULL
@@ -11,6 +13,7 @@ CREATE TABLE event (
   event_name VARCHAR(100) NOT NULL,
   event_code VARCHAR(36) NOT NULL,
   event_owner_code VARCHAR(36) NOT NULL,
+  event_network_validation BOOLEAN default false,
   event_description TEXT NOT NULL,
   dat_start TIMESTAMP,
   dat_finishing TIMESTAMP,

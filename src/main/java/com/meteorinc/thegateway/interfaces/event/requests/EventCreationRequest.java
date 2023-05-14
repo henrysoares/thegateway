@@ -24,6 +24,8 @@ public class EventCreationRequest implements Serializable {
     @NotBlank
     String description;
 
+    boolean isNetworkValidationEnabled;
+
     @NotNull
     LocalDateTime startingDate;
 

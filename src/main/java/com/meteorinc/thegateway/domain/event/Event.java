@@ -37,6 +37,9 @@ public class Event {
     @Column(name = "event_description", nullable = false)
     String description;
 
+    @Column(name = "event_network_validation", nullable = false)
+    boolean isNetWorkValidationAvailable;
+
     @Column(name = "dat_start")
     LocalDateTime startsAt;
 
