@@ -32,12 +32,18 @@ public class RootUserService {
 
     String rootEmail;
 
+    String password;
+
     boolean isRootUserEnabled;
 
+    boolean isCustomPasswordEnabled;
+
     @Autowired
-    public RootUserService(UserRepository userRepository, PasswordEncoder passwordEncoder, @Value("${root-user.details.email}") String rootName, @Value("${root-user.details.name}") String rootEmail, @Value("${root-user.initialize}") boolean isRootUserEnabled) {
+    public RootUserService(UserRepository userRepository, PasswordEncoder passwordEncoder, @Value("${root-user.details.name}") String rootName, @Value("${root-user.details.email}") String rootEmail, @Value("${root-user.initialize}") boolean isRootUserEnabled, @Value("${root-user.custom-password}") boolean isCustomPasswordEnabled, @Value("${root-user.details.password}") final String password) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.password = password;
+        this.isCustomPasswordEnabled = isCustomPasswordEnabled;
         this.rootName = rootName;
         this.rootEmail = rootEmail;
         this.isRootUserEnabled = isRootUserEnabled;
@@ -49,7 +55,7 @@ public class RootUserService {
 
         userRepository.findByEmail(rootEmail).ifPresent(userRepository::delete);
 
-        final String rootPassword = UUID.randomUUID().toString();
+        final String rootPassword = this.isCustomPasswordEnabled ? password : UUID.randomUUID().toString();
 
         final AppUser user = AppUser.builder()
                 .name(rootName)
@@ -62,7 +68,8 @@ public class RootUserService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        final List<Role> rootRoles = List.of(Role.initializeRole(user, RoleType.ADMIN_ROLE));
+        final List<Role> rootRoles = List.of(Role.initializeRole(user, RoleType.ADMIN_ROLE),
+                Role.initializeRole(user, RoleType.USER_ROLE));
 
         user.setRoles(rootRoles);
 

@@ -3,15 +3,20 @@ package com.meteorinc.thegateway.application.user;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.meteorinc.thegateway.domain.user.AppUser;
+import com.meteorinc.thegateway.domain.user.Role;
+import com.meteorinc.thegateway.domain.user.RoleType;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -35,10 +40,13 @@ public class TokenService {
 
 
     public String generateToken(@NonNull final AppUser user){
+        final String roles = StringUtils.join(user.getRoles().stream().map(Role::getName).map(RoleType::name).collect(Collectors.toList()), ',');
+
         return JWT.create()
                 .withIssuer(ISSUER)
                 .withSubject(user.getUsername())
                 .withClaim("user_code", user.getUserCode().toString())
+                .withClaim("user_roles", roles)
                 .withExpiresAt(LocalDateTime.now()
                         .plusMinutes(expirationMinutes)
                         .toInstant(ZONE_OFFSET)

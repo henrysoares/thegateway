@@ -12,10 +12,11 @@ spring:
 
 root-user:
   initialize: true
+  custom-password: true
   details:
     email: "root@root.com"
     name: "root"
-
+    password: "test"
 jwt:
   secret: "TH3GAT3WaY" #ideal seria um config server
   expiration-minutes: 120
