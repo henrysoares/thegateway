@@ -3,10 +3,11 @@ package com.meteorinc.thegateway.interfaces.user;
 import com.meteorinc.thegateway.application.user.TokenService;
 import com.meteorinc.thegateway.application.user.UserService;
 import com.meteorinc.thegateway.domain.user.AppUser;
+import com.meteorinc.thegateway.domain.user.AppUserDTO;
 import com.meteorinc.thegateway.domain.user.RoleType;
 import com.meteorinc.thegateway.interfaces.user.dto.LoginResponse;
 import com.meteorinc.thegateway.interfaces.user.requests.LoginRequest;
-import com.meteorinc.thegateway.interfaces.user.requests.UserCreationRequest;
+import com.meteorinc.thegateway.interfaces.user.requests.UserRequest;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +43,35 @@ public class UserResource {
 
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody @NonNull UserCreationRequest request){
+    public ResponseEntity<Void> register(@RequestBody @NonNull UserRequest request){
         userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/{userCode}")
+    public ResponseEntity<AppUserDTO> findUserDetails(@PathVariable("userCode") @NonNull UUID userCode){
+        final var user = userService.findUserDetails(userCode);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    }
+
+    @PatchMapping("/{userCode}")
+    public ResponseEntity<Void> register(@PathVariable("userCode") @NonNull UUID userCode, @RequestBody @NonNull UserRequest request){
+        userService.updateUser(request, userCode);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @DeleteMapping("/{userCode}")
+    public ResponseEntity<Void> register(@PathVariable("userCode") @NonNull UUID userCode){
+        userService.deleteUser(userCode);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/add-role/{userCode}")
     public void register(@PathVariable @NonNull UUID userCode, @RequestBody @NonNull final RoleType roleType){
         userService.addRole(userCode, roleType);
     }
+
+
 
 
 }

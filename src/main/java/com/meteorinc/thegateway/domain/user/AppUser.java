@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "APP_USER")
 @Getter
+@Setter
 public class AppUser implements UserDetails {
 
     @Id
@@ -89,6 +90,15 @@ public class AppUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public AppUserDTO toDTO(){
+        return AppUserDTO.builder()
+                .name(name)
+                .email(email)
+                .document(document)
+                .documentType(documentType)
+                .build();
     }
 
 }

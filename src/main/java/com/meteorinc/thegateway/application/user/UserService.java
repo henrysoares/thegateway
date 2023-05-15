@@ -1,10 +1,7 @@
 package com.meteorinc.thegateway.application.user;
 
-import com.meteorinc.thegateway.domain.user.AppUser;
-import com.meteorinc.thegateway.domain.user.Role;
-import com.meteorinc.thegateway.domain.user.RoleType;
-import com.meteorinc.thegateway.domain.user.UserRepository;
-import com.meteorinc.thegateway.interfaces.user.requests.UserCreationRequest;
+import com.meteorinc.thegateway.domain.user.*;
+import com.meteorinc.thegateway.interfaces.user.requests.UserRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -19,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -46,7 +44,7 @@ public class UserService implements UserDetailsService {
         return test.orElseThrow(RuntimeException::new);
     }
 
-    public void createUser(@NonNull final UserCreationRequest request){
+    public void createUser(@NonNull final UserRequest request){
         try{
 
             final AppUser user = AppUser.builder()
@@ -69,6 +67,32 @@ public class UserService implements UserDetailsService {
             log.error("Was not possible to create the user, cause=",exception);
             throw exception;
         }
+    }
+
+    public void updateUser(@NonNull final UserRequest request, @NonNull final UUID userCode){
+        final var user = userRepository.findByUserCode(userCode).orElseThrow(RuntimeException::new);
+
+        final String userName = Objects.isNull(request.getName()) ? user.getName() : request.getName();
+        final String userEmail = Objects.isNull(request.getEmail()) ? user.getEmail() : request.getEmail();
+        final String userDocument = Objects.isNull(request.getDocument()) ? user.getDocument() : request.getDocument();
+        final String userDocumentType = Objects.isNull(request.getDocumentType()) ? user.getDocumentType() : request.getDocumentType();
+
+        user.setName(userName);
+        user.setEmail(userEmail);
+        user.setDocument(userDocument);
+        user.setDocumentType(userDocumentType);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+    }
+
+    public void deleteUser(@NonNull final UUID userCode){
+        final var user = userRepository.findByUserCode(userCode).orElseThrow(RuntimeException::new);
+        userRepository.delete(user);
+    }
+
+    public AppUserDTO findUserDetails(@NonNull final UUID userCode){
+        return userRepository.findByUserCode(userCode).map(AppUser::toDTO).orElseThrow(RuntimeException::new);
     }
 
     public void addRole(@NonNull final UUID userCode, @NonNull final RoleType roleType){

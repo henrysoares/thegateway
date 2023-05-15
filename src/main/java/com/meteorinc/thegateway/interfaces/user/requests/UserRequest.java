@@ -10,20 +10,15 @@ import javax.validation.constraints.NotNull;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 @Builder
-public class UserCreationRequest {
+public class UserRequest {
 
-    @NotNull
     String email;
 
-    @NonNull
     String name;
 
-    @NonNull
     String document;
 
-    @NonNull
     String documentType;
 
-    @NotNull
     String password;
 }

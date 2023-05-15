@@ -14,6 +14,7 @@ import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.CertifiedUploadRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.CheckInRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
+import com.meteorinc.thegateway.interfaces.user.requests.UserRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -25,7 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 

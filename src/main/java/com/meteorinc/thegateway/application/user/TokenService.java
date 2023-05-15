@@ -38,6 +38,9 @@ public class TokenService {
         this.expirationMinutes = expirationMinutes;
     }
 
+    public static String formatToken(@NonNull final String rawToken){
+        return rawToken.replace(BEARER_PREFIX, "");
+    }
 
     public String generateToken(@NonNull final AppUser user){
         final String roles = StringUtils.join(user.getRoles().stream().map(Role::getName).map(RoleType::name).collect(Collectors.toList()), ',');
@@ -63,9 +66,5 @@ public class TokenService {
         return JWT.require(algorithm)
                 .withIssuer(ISSUER)
                 .build().verify(formatToken(rawToken)).getClaim("user_code").asString();
-    }
-
-    public static String formatToken(@NonNull final String rawToken){
-        return rawToken.replace(BEARER_PREFIX, "");
     }
 }
