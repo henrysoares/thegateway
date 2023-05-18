@@ -1,6 +1,9 @@
-package com.meteorinc.thegateway.domain.user;
+package com.meteorinc.thegateway.application.user;
 
 import com.meteorinc.thegateway.application.user.TokenService;
+import com.meteorinc.thegateway.application.user.exceptions.UserNotFoundException;
+import com.meteorinc.thegateway.domain.user.AppUser;
+import com.meteorinc.thegateway.domain.user.UserRepository;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -23,7 +26,7 @@ public class AppUserService {
 
     public AppUser findUser(@NonNull final UUID userCode){
         log.info(userCode.toString());
-        return userRepository.findByUserCode(userCode).orElseThrow(RuntimeException::new);
+        return userRepository.findByUserCode(userCode).orElseThrow(UserNotFoundException::new);
     }
 
     public AppUser findUserByToken(@NonNull final String rawToken){

@@ -1,6 +1,7 @@
 package com.meteorinc.thegateway.interfaces.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.meteorinc.thegateway.domain.event.EventStatus;
 import com.meteorinc.thegateway.domain.location.LocationDTO;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,8 @@ import java.util.UUID;
 public class EventCreationResponse implements Serializable {
 
     String eventName;
+
+    EventStatus status;
 
     UUID ownerCode;
 

@@ -1,18 +1,19 @@
 package com.meteorinc.thegateway.application.event;
 
+import com.meteorinc.thegateway.application.event.exceptions.EventException;
 import com.meteorinc.thegateway.application.event.exceptions.EventNotFoundException;
 import com.meteorinc.thegateway.application.user.TokenService;
-import com.meteorinc.thegateway.domain.checkin.CheckIn;
 import com.meteorinc.thegateway.domain.event.Event;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.event.EventRepository;
+import com.meteorinc.thegateway.domain.event.EventStatus;
 import com.meteorinc.thegateway.domain.location.Location;
 import com.meteorinc.thegateway.domain.user.AppUser;
-import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
-import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
+import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -40,34 +41,35 @@ public class EventService {
     TokenService tokenService;
 
     /**
-     * Faz a criação do evento a partir do objeto {@link EventCreationRequest}
+     * Faz a criação do evento a partir do objeto {@link EventDetailsRequest}
      *
-     * @param eventCreationRequest
+     * @param eventDetailsRequest
      * @return
      */
-    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final UUID ownerCode){
+    public EventCreationResponse createEvent(@NonNull final EventDetailsRequest eventDetailsRequest, @NonNull final UUID ownerCode){
         try {
-            final double duration = eventCreationRequest.getDurationHours() == 0 ?
-                    DEFAULT_DURATION : eventCreationRequest.getDurationHours();
+            final double duration = eventDetailsRequest.getDurationHours() == 0 ?
+                    DEFAULT_DURATION : eventDetailsRequest.getDurationHours();
 
             final Location location = Location.builder()
-                    .type(eventCreationRequest.getLocation().getType())
-                    .metadata(eventCreationRequest.getLocation().getMetadata().toString())
-                    .latitude(eventCreationRequest.getLocation().getLatitude())
-                    .longitude(eventCreationRequest.getLocation().getLongitude())
+                    .type(eventDetailsRequest.getLocation().getType())
+                    .metadata(eventDetailsRequest.getLocation().getMetadata().toString())
+                    .latitude(eventDetailsRequest.getLocation().getLatitude())
+                    .longitude(eventDetailsRequest.getLocation().getLongitude())
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
 
             final Event event = Event.builder()
-                    .name(eventCreationRequest.getName())
+                    .name(eventDetailsRequest.getName())
                     .ownerCode(ownerCode)
+                    .status(EventStatus.SCHEDULED)
                     .eventCode(UUID.randomUUID())
                     .location(location)
-                    .isNetWorkValidationAvailable(eventCreationRequest.isNetworkValidationEnabled())
-                    .description(eventCreationRequest.getDescription())
-                    .startsAt(eventCreationRequest.getStartingDate())
-                    .finishesAt(eventCreationRequest.getStartingDate()
+                    .isNetWorkValidationAvailable(eventDetailsRequest.isNetworkValidationEnabled())
+                    .description(eventDetailsRequest.getDescription())
+                    .startsAt(eventDetailsRequest.getStartingDate())
+                    .finishesAt(eventDetailsRequest.getStartingDate()
                             .plusSeconds(convertToSeconds(duration)))
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
@@ -77,6 +79,7 @@ public class EventService {
 
             return EventCreationResponse.builder()
                     .eventName(event.getName())
+                    .status(event.getStatus())
                     .eventCode(event.getEventCode())
                     .eventDescription(event.getDescription())
                     .isNetworkValidationEnabled(event.isNetWorkValidationAvailable())
@@ -89,7 +92,7 @@ public class EventService {
         }
         catch (Exception exception){
             log.error("Was not possible to create the event.", exception);
-            throw new RuntimeException();
+            throw new EventException();
         }
 
     }
@@ -108,6 +111,38 @@ public class EventService {
     public Event findEvent(@NonNull final UUID eventCode){
         return eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new);
     }
+
+    public void updateEvent(@NonNull final UUID eventCode, @NonNull final EventDetailsRequest request){
+        final var event = eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new);
+        final var location = event.getLocation();
+
+        final double duration = request.getDurationHours() == 0 ?
+                DEFAULT_DURATION : request.getDurationHours();
+
+        location.setType(request.getLocation().getType());
+        location.setLatitude(request.getLocation().getLatitude());
+        location.setLongitude(request.getLocation().getLongitude());
+        location.setMetadata(request.getLocation().getMetadata().asText());
+        location.setUpdatedAt(LocalDateTime.now());
+
+        event.setDescription(request.getDescription());
+        event.setName(request.getName());
+        event.setLocation(location);
+        event.setNetWorkValidationAvailable(request.isNetworkValidationEnabled());
+        event.setStartsAt(request.getStartingDate());
+        event.setFinishesAt(request.getStartingDate().plusSeconds(convertToSeconds(duration)));
+        event.setUpdatedAt(LocalDateTime.now());
+
+        eventRepository.save(event);
+    }
+
+    public void updateStatus(@NonNull final UUID eventCode, @NonNull final EventStatus status){
+        final var event = eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new);
+        event.setStatus(status);
+        event.setUpdatedAt(LocalDateTime.now());
+
+        eventRepository.save(event);
+        }
 
     private long convertToSeconds(double duration){
         return (long) (duration * SECONDS_CONSTANT);

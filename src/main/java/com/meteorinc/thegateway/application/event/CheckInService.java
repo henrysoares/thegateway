@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.application.event.exceptions.CheckInNotValidException;
 import com.meteorinc.thegateway.domain.checkin.CheckIn;
 import com.meteorinc.thegateway.domain.checkin.CheckInRepository;
+import com.meteorinc.thegateway.domain.checkin.CheckInStatus;
 import com.meteorinc.thegateway.domain.event.Event;
+import com.meteorinc.thegateway.domain.event.EventStatus;
 import com.meteorinc.thegateway.domain.location.Location;
 import com.meteorinc.thegateway.domain.user.AppUser;
-import com.meteorinc.thegateway.interfaces.event.requests.CheckInRequest;
+import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
+import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor(onConstructor_ = @Autowired)
@@ -29,24 +33,50 @@ public class CheckInService {
 
     CheckInRepository checkInRepository;
 
-    public void doCheckIn(@NonNull final AppUser user, @NonNull final Event event, @NonNull final CheckInRequest request){
+    public EventCheckInResponse doCheckIn(@NonNull final AppUser user, @NonNull final Event event, @NonNull final EventUserStateValidation request){
+        final var response = new EventCheckInResponse();
+
         if(!isOnSameLocation(event, request)){
-            throw new CheckInNotValidException();
+            throw new CheckInNotValidException("A localização do usuario não bate com a do evento cadastrado.");
         }
 
-        final var checkIn = CheckIn.builder()
-                .appUser(user)
-                .event(event)
-                .checkInDate(LocalDateTime.now())
-                .checkOutDate(null)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        if(event.getStatus().equals(EventStatus.SCHEDULED) || event.getStatus().equals(EventStatus.CANCELLED)){
+            throw new CheckInNotValidException("Não é possivel realizar o check-in, o evento ainda não começou ou foi cancelado.");
+        }
+
+        final var checkIn = checkInRepository.findByAppUserAndEvent(user, event).orElseGet(() -> {
+            return CheckIn.builder()
+                    .appUser(user)
+                    .event(event)
+                    .checkInDate(LocalDateTime.now())
+                    .checkOutDate(null)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+            }
+        );
+
+        if(Objects.isNull(checkIn.getCheckOutDate())){
+            checkIn.setLastPrune(LocalDateTime.now());
+            checkIn.setUpdatedAt(LocalDateTime.now());
+
+            response.setNextCheck(LocalDateTime.now().plusMinutes(5));
+            response.setStatus(CheckInStatus.KEEP_GOING);
+        }
+
+        if((LocalDateTime.now().isAfter(event.getFinishesAt()) || LocalDateTime.now().isEqual(event.getFinishesAt())) && (event.getStatus().equals(EventStatus.FINISHED) || event.getStatus().equals(EventStatus.IN_PROGRESS))){
+            checkIn.setCheckOutDate(LocalDateTime.now());
+            checkIn.setUpdatedAt(LocalDateTime.now());
+            response.setNextCheck(null);
+            response.setStatus(CheckInStatus.STOP);
+        }
 
         checkInRepository.save(checkIn);
+
+        return response;
     }
 
-    private boolean isOnSameLocation(@NonNull final Event event, @NonNull final CheckInRequest request){
+    private boolean isOnSameLocation(@NonNull final Event event, @NonNull final EventUserStateValidation request){
         final boolean isGeolocationValid = validateGeolocation(event.getLocation(),request);
 
         if(isGeolocationValid && !event.isNetWorkValidationAvailable()) return true;
@@ -55,11 +85,11 @@ public class CheckInService {
 
     }
 
-    private boolean validateGeolocation(@NonNull final Location location, @NonNull final CheckInRequest request){
+    private boolean validateGeolocation(@NonNull final Location location, @NonNull final EventUserStateValidation request){
         final BigDecimal registeredLatitude = new BigDecimal(location.getLatitude());
         final BigDecimal registeredLongitude = new BigDecimal(location.getLongitude());
 
-        final BigDecimal currentUserLongitude = new BigDecimal(request.getLatitude());
+        final BigDecimal currentUserLongitude = new BigDecimal(request.getLongitude());
         final BigDecimal currentUserLatitude = new BigDecimal(request.getLatitude());
 
         final boolean isLatitudeValid = validateAxis(registeredLatitude, currentUserLatitude);
@@ -73,7 +103,7 @@ public class CheckInService {
         return registeredValue.subtract(currentValue).abs().compareTo(MAXIMUM_RANGE_DIFFERENCE) < 0;
     }
 
-    private boolean validateNetWork(@NonNull final Location location, @NonNull final CheckInRequest request){
+    private boolean validateNetWork(@NonNull final Location location, @NonNull final EventUserStateValidation request){
         try{
             ObjectMapper objectMapper = new ObjectMapper();
 

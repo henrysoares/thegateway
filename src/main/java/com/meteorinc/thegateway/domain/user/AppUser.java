@@ -1,5 +1,6 @@
 package com.meteorinc.thegateway.domain.user;
 
+import com.meteorinc.thegateway.domain.checkin.CheckIn;
 import com.meteorinc.thegateway.infrastructure.converter.UUIDEntityConverter;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -56,6 +57,9 @@ public class AppUser implements UserDetails {
     @Setter
     @OneToMany(mappedBy = "user",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     List<Role> roles;
+
+    @OneToOne(mappedBy = "appUser", cascade = CascadeType.ALL)
+    CheckIn checkIn;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

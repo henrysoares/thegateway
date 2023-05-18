@@ -1,6 +1,8 @@
 package com.meteorinc.thegateway.domain.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.meteorinc.thegateway.application.event.exceptions.EventException;
+import com.meteorinc.thegateway.domain.checkin.CheckIn;
 import com.meteorinc.thegateway.domain.location.Location;
 import com.meteorinc.thegateway.infrastructure.converter.UUIDEntityConverter;
 import lombok.*;
@@ -13,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Setter
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
@@ -26,6 +29,10 @@ public class Event {
     @Column(name = "event_name", nullable = false, length = 100)
     String name;
 
+    @Column(name = "event_status", nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    EventStatus status;
+
     @Column(name = "event_code", nullable = false, length = 36)
     @Convert(converter = UUIDEntityConverter.class)
     UUID eventCode;
@@ -38,6 +45,7 @@ public class Event {
     String description;
 
     @Column(name = "event_network_validation", nullable = false)
+    @Setter
     boolean isNetWorkValidationAvailable;
 
     @Column(name = "dat_start")
@@ -59,6 +67,9 @@ public class Event {
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     Certificate certificate;
 
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL)
+    CheckIn checkIn;
+
 
     public EventDTO toDTO() {
 
@@ -66,6 +77,7 @@ public class Event {
             return EventDTO.builder()
                     .eventName(this.name)
                     .eventDescription(this.description)
+                    .status(this.status)
                     .ownerCode(this.ownerCode)
                     .EventCode(this.eventCode)
                     .startsAt(this.startsAt)
@@ -76,7 +88,7 @@ public class Event {
                     .build();
         }catch (Exception exception){
             //TODO: Melhorar exception handling.
-            throw new RuntimeException("Não foi possivel realizar a converesão para DTO.");
+            throw new EventException("Não foi possivel realizar a converesão para DTO.");
         }
     }
 }

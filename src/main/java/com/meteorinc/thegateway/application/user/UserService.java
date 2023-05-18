@@ -1,5 +1,6 @@
 package com.meteorinc.thegateway.application.user;
 
+import com.meteorinc.thegateway.application.user.exceptions.UserNotFoundException;
 import com.meteorinc.thegateway.domain.user.*;
 import com.meteorinc.thegateway.interfaces.user.requests.UserRequest;
 import lombok.AccessLevel;
@@ -34,14 +35,12 @@ public class UserService implements UserDetailsService {
     public AppUser findUserByToken(@NonNull final String rawToken){
         final String code = tokenService.getUserCodeOnToken(rawToken);
 
-        return userRepository.findByUserCode(UUID.fromString(code)).orElseThrow(RuntimeException::new);
+        return userRepository.findByUserCode(UUID.fromString(code)).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var test = userRepository.findByEmail(username);
-
-        return test.orElseThrow(RuntimeException::new);
+        return userRepository.findByEmail(username).orElseThrow(UserNotFoundException::new);
     }
 
     public void createUser(@NonNull final UserRequest request){
@@ -70,7 +69,7 @@ public class UserService implements UserDetailsService {
     }
 
     public void updateUser(@NonNull final UserRequest request, @NonNull final UUID userCode){
-        final var user = userRepository.findByUserCode(userCode).orElseThrow(RuntimeException::new);
+        final var user = userRepository.findByUserCode(userCode).orElseThrow(UserNotFoundException::new);
 
         final String userName = Objects.isNull(request.getName()) ? user.getName() : request.getName();
         final String userEmail = Objects.isNull(request.getEmail()) ? user.getEmail() : request.getEmail();
@@ -87,16 +86,16 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUser(@NonNull final UUID userCode){
-        final var user = userRepository.findByUserCode(userCode).orElseThrow(RuntimeException::new);
+        final var user = userRepository.findByUserCode(userCode).orElseThrow(UserNotFoundException::new);
         userRepository.delete(user);
     }
 
     public AppUserDTO findUserDetails(@NonNull final UUID userCode){
-        return userRepository.findByUserCode(userCode).map(AppUser::toDTO).orElseThrow(RuntimeException::new);
+        return userRepository.findByUserCode(userCode).map(AppUser::toDTO).orElseThrow(UserNotFoundException::new);
     }
 
     public void addRole(@NonNull final UUID userCode, @NonNull final RoleType roleType){
-        final AppUser user = userRepository.findByUserCode(userCode).orElseThrow(RuntimeException::new);
+        final AppUser user = userRepository.findByUserCode(userCode).orElseThrow(UserNotFoundException::new);
 
         user.setRoles(List.of(Role.initializeRole(user, roleType)));
 

@@ -4,31 +4,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.application.event.CertificateService;
 import com.meteorinc.thegateway.application.event.CheckInService;
 import com.meteorinc.thegateway.application.event.EventService;
+import com.meteorinc.thegateway.application.event.exceptions.CertificateException;
 import com.meteorinc.thegateway.application.qrcode.QRCodeService;
-import com.meteorinc.thegateway.domain.event.Certificate;
 import com.meteorinc.thegateway.domain.event.Event;
 import com.meteorinc.thegateway.domain.event.EventDTO;
+import com.meteorinc.thegateway.domain.event.EventStatus;
 import com.meteorinc.thegateway.domain.user.AppUser;
-import com.meteorinc.thegateway.domain.user.AppUserService;
+import com.meteorinc.thegateway.application.user.AppUserService;
+import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.CertifiedUploadRequest;
-import com.meteorinc.thegateway.interfaces.event.requests.CheckInRequest;
-import com.meteorinc.thegateway.interfaces.event.requests.EventCreationRequest;
-import com.meteorinc.thegateway.interfaces.user.requests.UserRequest;
+import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
+import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,8 +46,8 @@ public class GatewayEventFacade {
 
     CertificateService certificateService;
 
-    public EventCreationResponse createEvent(@NonNull final EventCreationRequest eventCreationRequest, @NonNull final String creatorToken){
-        return eventService.createEvent(eventCreationRequest, appUserService.findUserByToken(creatorToken).getUserCode());
+    public EventCreationResponse createEvent(@NonNull final EventDetailsRequest eventDetailsRequest, @NonNull final String creatorToken){
+        return eventService.createEvent(eventDetailsRequest, appUserService.findUserByToken(creatorToken).getUserCode());
     }
 
     public List<EventDTO> findEvents(@NonNull final String token){
@@ -69,12 +67,12 @@ public class GatewayEventFacade {
     }
 
 
-    public void doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode, @NonNull final CheckInRequest request){
+    public EventCheckInResponse doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode, @NonNull final EventUserStateValidation request){
 
         final AppUser user = appUserService.findUserByToken(rawToken);
         final Event event = eventService.findEvent(eventCode);
 
-        checkInService.doCheckIn(user, event, request);
+        return checkInService.doCheckIn(user, event, request);
     }
 
     public void uploadCert(@NonNull final MultipartFile file,
@@ -95,7 +93,7 @@ public class GatewayEventFacade {
             certificateService.saveCertificate(file, event,certRequest);
         }catch (Exception exception){
             log.error("Was not possible to upload the certificate.",exception);
-            throw new RuntimeException();
+            throw new CertificateException("Não foi possivel fazer o updaload do certificado.", exception);
         }
     }
 
@@ -106,9 +104,17 @@ public class GatewayEventFacade {
             return certificateService.loadPdf(event);
         }catch (Exception exception){
             log.error("Was not possible to load the PDF.",exception);
-            throw new RuntimeException();
+            throw new CertificateException("Não foi possivel carregar o arquivo, tente mais tarde.", exception);
         }
 
+    }
+
+    public void updateEvent(@NonNull final UUID eventCode, @NonNull final EventDetailsRequest request){
+        eventService.updateEvent(eventCode, request);
+    }
+
+    public void updateStatus(@NonNull final UUID eventCode, @NonNull final EventStatus status){
+        eventService.updateStatus(eventCode, status);
     }
 
     private String getParameter(@NonNull final String parameterName, @NonNull final HttpServletRequest request){

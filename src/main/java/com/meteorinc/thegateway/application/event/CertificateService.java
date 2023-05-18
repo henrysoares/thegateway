@@ -1,5 +1,6 @@
 package com.meteorinc.thegateway.application.event;
 
+import com.meteorinc.thegateway.application.event.exceptions.CertificateException;
 import com.meteorinc.thegateway.domain.event.Certificate;
 import com.meteorinc.thegateway.domain.event.CertificateRepository;
 import com.meteorinc.thegateway.domain.event.Event;

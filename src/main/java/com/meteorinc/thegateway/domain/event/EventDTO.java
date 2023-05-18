@@ -17,6 +17,9 @@ public class EventDTO implements Serializable {
     String eventName;
 
     @NonNull
+    EventStatus status;
+
+    @NonNull
     UUID ownerCode;
 
     @NonNull

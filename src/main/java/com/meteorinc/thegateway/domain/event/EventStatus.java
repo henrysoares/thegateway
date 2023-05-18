@@ -1,2 +1,8 @@
-package com.meteorinc.thegateway.domain.event;public class EventStatus {
+package com.meteorinc.thegateway.domain.event;
+
+public enum EventStatus {
+    SCHEDULED,
+    CANCELLED,
+    IN_PROGRESS,
+    FINISHED
 }

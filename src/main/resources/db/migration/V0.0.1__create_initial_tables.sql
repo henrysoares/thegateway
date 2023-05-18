@@ -11,6 +11,7 @@ CREATE TABLE location (
 CREATE TABLE event (
   id SERIAL PRIMARY KEY,
   event_name VARCHAR(100) NOT NULL,
+  event_status VARCHAR(100) NOT NULL,
   event_code VARCHAR(36) NOT NULL,
   event_owner_code VARCHAR(36) NOT NULL,
   event_network_validation BOOLEAN default false,
@@ -60,6 +61,7 @@ CREATE TABLE check_in (
   user_id BIGINT NOT NULL,
   event_id BIGINT NOT NULL,
   dat_check_in TIMESTAMP NOT NULL,
+  dat_last_prune TIMESTAMP,
   dat_check_out TIMESTAMP,
   dat_creation TIMESTAMP NOT NULL,
   dat_update TIMESTAMP NOT NULL,
