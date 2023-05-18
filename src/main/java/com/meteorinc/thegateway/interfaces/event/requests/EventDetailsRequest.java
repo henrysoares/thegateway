@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 @Builder
-public class EventCreationRequest implements Serializable {
+public class EventDetailsRequest implements Serializable {
 
     @NotNull
     LocationCreationRequest location;

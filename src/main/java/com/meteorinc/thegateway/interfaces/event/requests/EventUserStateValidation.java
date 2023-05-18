@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 @Builder
-public class CheckInRequest {
+public class EventUserStateValidation {
 
     @NotNull
     @NotBlank
