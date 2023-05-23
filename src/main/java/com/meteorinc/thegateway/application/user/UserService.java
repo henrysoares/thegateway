@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -68,21 +69,27 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void updateUser(@NonNull final UserRequest request, @NonNull final UUID userCode){
+    public AppUser updateUser(@NonNull final UserRequest request, @NonNull final String rawToken){
+        final var userCode = UUID.fromString(tokenService.getUserCodeOnToken(rawToken));
+
         final var user = userRepository.findByUserCode(userCode).orElseThrow(UserNotFoundException::new);
 
         final String userName = Objects.isNull(request.getName()) ? user.getName() : request.getName();
         final String userEmail = Objects.isNull(request.getEmail()) ? user.getEmail() : request.getEmail();
+        final String password = Objects.isNull(request.getPassword()) ? user.getPassword() : passwordEncoder.encode(request.getPassword());
         final String userDocument = Objects.isNull(request.getDocument()) ? user.getDocument() : request.getDocument();
         final String userDocumentType = Objects.isNull(request.getDocumentType()) ? user.getDocumentType() : request.getDocumentType();
 
         user.setName(userName);
         user.setEmail(userEmail);
+        user.setPassword(password);
         user.setDocument(userDocument);
         user.setDocumentType(userDocumentType);
         user.setUpdatedAt(LocalDateTime.now());
 
         userRepository.save(user);
+
+        return user;
     }
 
     public void deleteUser(@NonNull final UUID userCode){

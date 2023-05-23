@@ -32,7 +32,8 @@ public class UserResource {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @NonNull LoginRequest request){
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
 
         var auth = authenticationManager.authenticate(authenticationToken);
 
@@ -54,20 +55,23 @@ public class UserResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    @PatchMapping("/{userCode}")
-    public ResponseEntity<Void> register(@PathVariable("userCode") @NonNull UUID userCode, @RequestBody @NonNull UserRequest request){
-        userService.updateUser(request, userCode);
-        return ResponseEntity.status(HttpStatus.OK).build();
+    @PatchMapping
+    public ResponseEntity<AppUserDTO> updateUser(@NonNull @RequestHeader("Authorization") final String token,
+                                         @RequestBody @NonNull UserRequest request){
+        final var user = userService.updateUser(request, token).toDTO();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(user);
     }
 
     @DeleteMapping("/{userCode}")
-    public ResponseEntity<Void> register(@PathVariable("userCode") @NonNull UUID userCode){
+    public ResponseEntity<Void> deleteUser(@PathVariable("userCode") @NonNull UUID userCode){
         userService.deleteUser(userCode);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/add-role/{userCode}")
-    public void register(@PathVariable @NonNull UUID userCode, @RequestBody @NonNull final RoleType roleType){
+    public void addRole(@PathVariable @NonNull UUID userCode,
+                         @RequestBody @NonNull final RoleType roleType){
         userService.addRole(userCode, roleType);
     }
 

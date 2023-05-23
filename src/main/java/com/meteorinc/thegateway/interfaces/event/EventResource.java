@@ -33,12 +33,15 @@ public class EventResource {
     GatewayEventFacade gatewayEventFacade;
 
     @PostMapping
-    public ResponseEntity<EventCreationResponse> createEvent(@NonNull @RequestHeader("Authorization") final String token,@RequestBody @NonNull @Valid EventDetailsRequest request){
+    public ResponseEntity<EventCreationResponse> createEvent(
+            @NonNull @RequestHeader("Authorization") final String token,
+            @RequestBody @NonNull @Valid EventDetailsRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(gatewayEventFacade.createEvent(request, token));
     }
 
     @GetMapping("/{eventCode}")
-    public ResponseEntity<EventDTO> findEvent(@PathVariable("eventCode") UUID eventCode) throws JsonProcessingException {
+    public ResponseEntity<EventDTO> findEvent(@PathVariable("eventCode") UUID eventCode)
+            throws JsonProcessingException {
         return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findEvent(eventCode));
     }
 
@@ -59,13 +62,15 @@ public class EventResource {
 
 
     @PostMapping("/check-in/{eventCode}")
-    public ResponseEntity<EventCheckInResponse> doCheckIn(@NonNull @RequestHeader("Authorization") final String token,
-                                                          @PathVariable("eventCode") UUID eventCode,
-                                                          @RequestBody @NonNull final EventUserStateValidation request){
+    public ResponseEntity<EventCheckInResponse> doCheckIn (
+            @NonNull @RequestHeader("Authorization") final String token,
+            @PathVariable("eventCode") UUID eventCode,
+            @RequestBody @NonNull final EventUserStateValidation request){
         return ResponseEntity.ok(gatewayEventFacade.doCheckIn(token, eventCode, request));
     }
 
-    @PostMapping(value = "/certificate/upload/{eventCode}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/certificate/upload/{eventCode}",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Void> uploadCertifiedFile(@RequestParam("file") @NonNull final MultipartFile file,
                                                     @PathVariable("eventCode") UUID eventCode,
                                                     @NonNull final HttpServletRequest request) {
@@ -86,14 +91,15 @@ public class EventResource {
     }
 
     @PostMapping("/certificate/{eventCode}")
-    public ResponseEntity<Void> fireEmails(@PathVariable("eventCode") UUID eventCode, @NonNull @RequestBody final FireEmailsRequest request) {
+    public ResponseEntity<Void> fireEmails(@PathVariable("eventCode") UUID eventCode,
+                                           @NonNull @RequestBody final FireEmailsRequest request) {
 
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/generate-statistics/{eventCode}")
-    public void
-    generateStatistics(@PathVariable("eventCode") UUID eventCode, HttpServletResponse response) throws IOException {
+    public void generateStatistics(@PathVariable("eventCode") UUID eventCode,
+                                   HttpServletResponse response) throws IOException {
 
         // Define o tipo de conteúdo da resposta como "text/csv"
         response.setContentType("text/csv");
@@ -118,7 +124,8 @@ public class EventResource {
 
 
     @PatchMapping(value = "/{eventCode}")
-    public ResponseEntity<Void> updateEventDetails(@PathVariable("eventCode") UUID eventCode, @NonNull @RequestBody final EventDetailsRequest request) {
+    public ResponseEntity<Void> updateEventDetails(@PathVariable("eventCode") UUID eventCode,
+                                                   @NonNull @RequestBody final EventDetailsRequest request) {
         gatewayEventFacade.updateEvent(eventCode, request);
         return ResponseEntity.ok().build();
     }
