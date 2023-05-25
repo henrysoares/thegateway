@@ -9,14 +9,24 @@ spring:
 
   jpa:
     show-sql: true
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: dummy-nao-existe@gmail.com
+    password: anypassword
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   servlet:
     multipart:
       location: "./certs"
 
 root-user:
-  initialize: true
+  initialize: false
   custom-password: true
   details:
     email: "root@root.com"
@@ -26,4 +36,5 @@ root-user:
 jwt:
   secret: "TH3GAT3WaY" #ideal seria um config server
   expiration-minutes: 120
+
 

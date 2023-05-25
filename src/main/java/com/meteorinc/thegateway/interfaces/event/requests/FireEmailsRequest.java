@@ -12,4 +12,7 @@ public class FireEmailsRequest {
 
     double participationPercentage;
 
+    String dummyEmail;
+
+    String dummySubject;
 }

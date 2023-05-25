@@ -76,9 +76,11 @@ public class UserService implements UserDetailsService {
 
         final String userName = Objects.isNull(request.getName()) ? user.getName() : request.getName();
         final String userEmail = Objects.isNull(request.getEmail()) ? user.getEmail() : request.getEmail();
-        final String password = Objects.isNull(request.getPassword()) ? user.getPassword() : passwordEncoder.encode(request.getPassword());
+        final String password = Objects.isNull(request.getPassword()) ?
+                user.getPassword() : passwordEncoder.encode(request.getPassword());
         final String userDocument = Objects.isNull(request.getDocument()) ? user.getDocument() : request.getDocument();
-        final String userDocumentType = Objects.isNull(request.getDocumentType()) ? user.getDocumentType() : request.getDocumentType();
+        final String userDocumentType = Objects.isNull(request.getDocumentType()) ?
+                user.getDocumentType() : request.getDocumentType();
 
         user.setName(userName);
         user.setEmail(userEmail);

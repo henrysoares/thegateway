@@ -2,6 +2,7 @@ package com.meteorinc.thegateway.interfaces.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.meteorinc.thegateway.application.GatewayEventFacade;
+import com.meteorinc.thegateway.application.email.EmailService;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.event.EventStatus;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
@@ -31,6 +32,8 @@ import java.util.UUID;
 public class EventResource {
 
     GatewayEventFacade gatewayEventFacade;
+
+    EmailService emailService;
 
     @PostMapping
     public ResponseEntity<EventCreationResponse> createEvent(
@@ -93,7 +96,7 @@ public class EventResource {
     @PostMapping("/certificate/{eventCode}")
     public ResponseEntity<Void> fireEmails(@PathVariable("eventCode") UUID eventCode,
                                            @NonNull @RequestBody final FireEmailsRequest request) {
-
+        emailService.sendEmail(request.getDummyEmail(),request.getDummySubject(), "Teste");
         return ResponseEntity.ok().build();
     }
 

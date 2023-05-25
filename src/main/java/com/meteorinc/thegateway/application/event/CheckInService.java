@@ -3,6 +3,7 @@ package com.meteorinc.thegateway.application.event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.application.event.exceptions.CheckInNotValidException;
 import com.meteorinc.thegateway.domain.checkin.CheckIn;
+import com.meteorinc.thegateway.domain.checkin.CheckInCertificateStatus;
 import com.meteorinc.thegateway.domain.checkin.CheckInRepository;
 import com.meteorinc.thegateway.domain.checkin.CheckInStatus;
 import com.meteorinc.thegateway.domain.event.Event;
@@ -50,6 +51,7 @@ public class CheckInService {
                     .event(event)
                     .checkInDate(LocalDateTime.now())
                     .checkOutDate(null)
+                    .certificateStatus(CheckInCertificateStatus.NONE)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();

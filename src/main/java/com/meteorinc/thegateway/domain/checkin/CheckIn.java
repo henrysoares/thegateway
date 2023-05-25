@@ -29,6 +29,16 @@ public class CheckIn {
     @JoinColumn(name = "EVENT_ID")
     Event event;
 
+    @Column(name = "PARTICIPATION_PERCENTAGE", nullable = false)
+    float participationPercentage;
+
+    @Column(name = "certificate_process_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    CheckInCertificateStatus certificateStatus;
+
+    @Column(name = "generated_certificate", columnDefinition = "MEDIUMBLOB")
+    byte[] generatedCertificate;
+
     @Column(name = "DAT_CHECK_IN", nullable = false)
     LocalDateTime checkInDate;
 
