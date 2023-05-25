@@ -35,7 +35,7 @@ public class CertificateEmitterJob {
 
     EmailService emailService;
 
-    @Scheduled(fixedDelay = 20000)
+   // @Scheduled(fixedDelay = 20000)
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
     @SneakyThrows
     public void processCerts(){
