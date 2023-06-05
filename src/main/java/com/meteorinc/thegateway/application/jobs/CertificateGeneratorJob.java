@@ -19,11 +19,11 @@ public class CertificateGeneratorJob {
 
     EmailService emailService;
 
-    //@Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 10000)
     public void generateCerts(){
         final var checkIns = checkInRepository.findEligibleUsersForCertificateSending();
 
-        if(checkIns.isPresent() && false){
+        if(checkIns.isPresent()){
 
             if(!checkIns.get().isEmpty()){
 

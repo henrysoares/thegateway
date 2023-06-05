@@ -18,7 +18,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
           "select ci.* from check_in ci "
               + "inner join event e on e.id = ci.event_id "
               + "where ci.certificate_process_status = 'NONE' "
-              + "and e.event_status = 'FINISHED' "
+              + "and e.event_status in ('FINISHED', 'FORCED_FINISHED') "
               + "limit 50",
             nativeQuery = true)
     Optional<List<CheckIn>> findEligibleUsersForCertificateGeneration();
@@ -28,7 +28,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
                     "select ci.* from check_in ci "
                             + "inner join event e on e.id = ci.event_id "
                             + "where ci.certificate_process_status = 'DONE' "
-                            + "and e.event_status = 'FINISHED' "
+                            + "and e.event_status in ('FINISHED', 'FORCED_FINISHED') "
                             + "limit 50",
             nativeQuery = true)
     Optional<List<CheckIn>> findEligibleUsersForCertificateSending();

@@ -64,7 +64,6 @@ CREATE TABLE check_in (
   certificate_process_status VARCHAR(100) NOT NULL,
   generated_certificate BYTEA,
   dat_check_in TIMESTAMP NOT NULL,
-  dat_last_prune TIMESTAMP,
   dat_check_out TIMESTAMP,
   dat_creation TIMESTAMP NOT NULL,
   dat_update TIMESTAMP NOT NULL,

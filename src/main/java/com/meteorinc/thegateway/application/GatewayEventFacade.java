@@ -67,13 +67,22 @@ public class GatewayEventFacade {
     }
 
 
-    public EventCheckInResponse doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode, @NonNull final EventUserStateValidation request){
+    public void doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode, @NonNull final EventUserStateValidation request){
 
         final AppUser user = appUserService.findUserByToken(rawToken);
         final Event event = eventService.findEvent(eventCode);
 
-        return checkInService.doCheckIn(user, event, request);
+        checkInService.doCheckIn(user, event, request);
     }
+
+    public void doCheckOut(@NonNull final String rawToken, @NonNull final UUID eventCode){
+
+        final AppUser user = appUserService.findUserByToken(rawToken);
+        final Event event = eventService.findEvent(eventCode);
+
+        checkInService.doCheckOut(user, event);
+    }
+
 
     public void uploadCert(@NonNull final MultipartFile file,
                            @NonNull final UUID eventCode,
@@ -115,6 +124,14 @@ public class GatewayEventFacade {
 
     public void updateStatus(@NonNull final UUID eventCode, @NonNull final EventStatus status){
         eventService.updateStatus(eventCode, status);
+    }
+
+    public void startEvent(@NonNull final UUID eventCode, @NonNull final EventStatus status){
+        eventService.startEvent(eventCode, status);
+    }
+
+    public void finishEvent(@NonNull final UUID eventCode){
+        eventService.finishEvent(eventCode);
     }
 
     private String getParameter(@NonNull final String parameterName, @NonNull final HttpServletRequest request){

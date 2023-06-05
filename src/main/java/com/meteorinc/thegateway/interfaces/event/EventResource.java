@@ -5,26 +5,36 @@ import com.meteorinc.thegateway.application.GatewayEventFacade;
 import com.meteorinc.thegateway.application.email.EmailService;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.event.EventStatus;
-import com.meteorinc.thegateway.interfaces.event.dto.EventCheckInResponse;
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
-import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
 import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
+import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
 import com.meteorinc.thegateway.interfaces.event.requests.FireEmailsRequest;
 import com.opencsv.CSVWriter;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
+import java.io.*;
+import java.util.List;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.apache.pdfbox.io.IOUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.PDType3Font;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping("/api/gateway/event")
 @RestController
@@ -34,6 +44,8 @@ public class EventResource {
     GatewayEventFacade gatewayEventFacade;
 
     EmailService emailService;
+
+  private static final String DEST = "C:\\Users\\henry\\OneDrive\\Área de Trabalho\\benio";
 
     @PostMapping
     public ResponseEntity<EventCreationResponse> createEvent(
@@ -65,11 +77,20 @@ public class EventResource {
 
 
     @PostMapping("/check-in/{eventCode}")
-    public ResponseEntity<EventCheckInResponse> doCheckIn (
+    public ResponseEntity<Void> doCheckIn (
             @NonNull @RequestHeader("Authorization") final String token,
             @PathVariable("eventCode") UUID eventCode,
             @RequestBody @NonNull final EventUserStateValidation request){
-        return ResponseEntity.ok(gatewayEventFacade.doCheckIn(token, eventCode, request));
+        gatewayEventFacade.doCheckIn(token, eventCode, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/check-out/{eventCode}")
+    public ResponseEntity<Void> doCheckOut (
+            @NonNull @RequestHeader("Authorization") final String token,
+            @PathVariable("eventCode") UUID eventCode){
+        gatewayEventFacade.doCheckOut(token, eventCode);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "/certificate/upload/{eventCode}",
@@ -141,9 +162,68 @@ public class EventResource {
 
     @PatchMapping(value = "/{eventCode}/start")
     public ResponseEntity<Void> startEvent(@PathVariable("eventCode") UUID eventCode) {
-        gatewayEventFacade.updateStatus(eventCode, EventStatus.IN_PROGRESS);
+        gatewayEventFacade.startEvent(eventCode, EventStatus.IN_PROGRESS);
         return ResponseEntity.ok().build();
     }
 
+    @PatchMapping(value = "/{eventCode}/finish")
+    public ResponseEntity<Void> finishEvent(@PathVariable("eventCode") UUID eventCode) {
+        gatewayEventFacade.finishEvent(eventCode);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/test", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> generateCertificate() throws IOException {
+
+        // Carregar o template do certificado a partir do banco de dados ou de outro local
+        byte[] templateBytes = getTemplateFromDatabase();
+        PDDocument document = PDDocument.load(templateBytes);
+
+        PDFTextStripper stripper = new PDFTextStripper();
+        String text = stripper.getText(document);
+
+        text = text.replace("{{UserName}}", "HENRY SOARES").replace("\r", "").replace("\n","");
+
+        PDDocument newDocument = new PDDocument();
+        PDPage page = new PDPage();
+        newDocument.addPage(page);
+        PDPageContentStream contentStream = new PDPageContentStream(newDocument, page);
+        contentStream.beginText();
+
+       // PDType0Font font = PDType0Font.load(document, new File("fonts/Arial-BoldMT.ttf"));
+        contentStream.setFont(PDType1Font.COURIER, 12);
+        //contentStream.setFont(, 12);
+
+        contentStream.newLineAtOffset(100, 700);
+        contentStream.showText(text);
+        contentStream.endText();
+        contentStream.close();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        newDocument.save(baos);
+        byte[] bytes = baos.toByteArray();
+
+
+        contentStream.close();
+        document.close();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline;filename=" + "teste.pdf");
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
+
+        // Retorna a resposta HTTP com o arquivo PDF
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(bytes);
+    }
+
+
+    private byte[] getTemplateFromDatabase() {
+        return gatewayEventFacade.loadCert(UUID.fromString("25947b7e-f165-4034-9c81-03d730621060"));
+    }
 }
+
+
+
+
 

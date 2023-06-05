@@ -34,9 +34,7 @@ public class CheckInService {
 
     CheckInRepository checkInRepository;
 
-    public EventCheckInResponse doCheckIn(@NonNull final AppUser user, @NonNull final Event event, @NonNull final EventUserStateValidation request){
-        final var response = new EventCheckInResponse();
-
+    public void doCheckIn(@NonNull final AppUser user, @NonNull final Event event, @NonNull final EventUserStateValidation request){
         if(!isOnSameLocation(event, request)){
             throw new CheckInNotValidException("A localização do usuario não bate com a do evento cadastrado.");
         }
@@ -45,38 +43,37 @@ public class CheckInService {
             throw new CheckInNotValidException("Não é possivel realizar o check-in, o evento ainda não começou ou foi cancelado.");
         }
 
-        final var checkIn = checkInRepository.findByAppUserAndEvent(user, event).orElseGet(() -> {
-            return CheckIn.builder()
-                    .appUser(user)
-                    .event(event)
-                    .checkInDate(LocalDateTime.now())
-                    .checkOutDate(null)
-                    .certificateStatus(CheckInCertificateStatus.NONE)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            }
-        );
-
-        if(Objects.isNull(checkIn.getCheckOutDate())){
-            checkIn.setLastPrune(LocalDateTime.now());
-            checkIn.setUpdatedAt(LocalDateTime.now());
-
-            response.setNextCheck(LocalDateTime.now().plusMinutes(5));
-            response.setStatus(CheckInStatus.KEEP_GOING);
+        if(checkInRepository.findByAppUserAndEvent(user, event).isPresent()){
+            throw new CheckInNotValidException("Check-in ja realizado.");
         }
 
-        if((LocalDateTime.now().isAfter(event.getFinishesAt()) || LocalDateTime.now().isEqual(event.getFinishesAt())) && (event.getStatus().equals(EventStatus.FINISHED) || event.getStatus().equals(EventStatus.IN_PROGRESS))){
-            checkIn.setCheckOutDate(LocalDateTime.now());
-            checkIn.setUpdatedAt(LocalDateTime.now());
-            response.setNextCheck(null);
-            response.setStatus(CheckInStatus.STOP);
-        }
+        final var checkIn = CheckIn.builder()
+                .appUser(user)
+                .event(event)
+                .checkInDate(LocalDateTime.now())
+                .checkOutDate(null)
+                .certificateStatus(CheckInCertificateStatus.NONE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
         checkInRepository.save(checkIn);
-
-        return response;
     }
+
+    public void doCheckOut(@NonNull final AppUser user, @NonNull final Event event){
+        if(event.getStatus().equals(EventStatus.SCHEDULED) || event.getStatus().equals(EventStatus.CANCELLED)){
+            throw new CheckInNotValidException("Não é possivel realizar o check-out, o evento ainda não começou ou foi cancelado.");
+        }
+
+        final var checkIn = checkInRepository.findByAppUserAndEvent(user, event)
+                .orElseThrow(() -> new CheckInNotValidException("Check-in não encontrado."));
+
+        checkIn.setUpdatedAt(LocalDateTime.now());
+        checkIn.setCheckOutDate(LocalDateTime.now());
+
+        checkInRepository.save(checkIn);
+    }
+
 
     private boolean isOnSameLocation(@NonNull final Event event, @NonNull final EventUserStateValidation request){
         final boolean isGeolocationValid = validateGeolocation(event.getLocation(),request);

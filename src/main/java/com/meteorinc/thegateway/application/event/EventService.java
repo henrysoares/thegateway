@@ -13,14 +13,15 @@ import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -97,6 +98,24 @@ public class EventService {
 
     }
 
+    public List<Event> findEventsByStatusAndStartingDateLessThan(@NonNull final EventStatus status,
+                                                                 @NonNull final LocalDateTime dateTime){
+        return eventRepository.findByStatusAndStartsAtLessThan(status, dateTime).orElse(Collections.emptyList());
+    }
+
+    public List<Event> findEventsByStatusAndFinishingDateLessThan(@NonNull final EventStatus status,
+                                                                  @NonNull final LocalDateTime dateTime){
+        return eventRepository.findByStatusAndFinishesAtLessThan(status, dateTime).orElse(Collections.emptyList());
+    }
+
+    public void save(@NonNull final Event event){
+        eventRepository.save(event);
+    }
+
+    public void save(@NonNull final Collection<Event> event){
+        eventRepository.saveAll(event);
+    }
+
     public List<EventDTO> findEvents(@NonNull final AppUser user){
 
 
@@ -142,7 +161,30 @@ public class EventService {
         event.setUpdatedAt(LocalDateTime.now());
 
         eventRepository.save(event);
-        }
+    }
+
+    public void startEvent(@NonNull final UUID eventCode, @NonNull final EventStatus status){
+        final var event = eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new);
+
+        final var eventDuration = Duration.between(event.getStartsAt(), event.getFinishesAt()).toHours();
+
+        event.setStatus(status);
+        event.setStartsAt(LocalDateTime.now());
+        event.setFinishesAt(LocalDateTime.now().plusHours(eventDuration));
+        event.setUpdatedAt(LocalDateTime.now());
+
+        eventRepository.save(event);
+    }
+
+    public void finishEvent(@NonNull final UUID eventCode){
+        final var event = eventRepository.findByEventCode(eventCode).orElseThrow(EventNotFoundException::new);
+
+        event.setFinishesAt(LocalDateTime.now());
+        event.setStatus(EventStatus.FORCED_FINISHED);
+        event.setUpdatedAt(LocalDateTime.now());
+
+        eventRepository.save(event);
+    }
 
     private long convertToSeconds(double duration){
         return (long) (duration * SECONDS_CONSTANT);

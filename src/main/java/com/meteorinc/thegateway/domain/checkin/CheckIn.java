@@ -42,9 +42,6 @@ public class CheckIn {
     @Column(name = "DAT_CHECK_IN", nullable = false)
     LocalDateTime checkInDate;
 
-    @Column(name = "DAT_LAST_PRUNE", nullable = false)
-    LocalDateTime lastPrune;
-
     @Column(name = "DAT_CHECK_OUT", nullable = false)
     LocalDateTime checkOutDate;
 
