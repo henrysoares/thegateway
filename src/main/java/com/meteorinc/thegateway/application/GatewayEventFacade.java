@@ -1,6 +1,7 @@
 package com.meteorinc.thegateway.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.meteorinc.thegateway.application.email.EmailService;
 import com.meteorinc.thegateway.application.event.CertificateService;
 import com.meteorinc.thegateway.application.event.CheckInService;
 import com.meteorinc.thegateway.application.event.EventService;
@@ -16,9 +17,11 @@ import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.CertifiedUploadRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
 import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
+import com.opencsv.CSVWriter;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +29,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor(onConstructor_ = @Autowired)
@@ -43,6 +50,8 @@ public class GatewayEventFacade {
     CheckInService checkInService;
 
     QRCodeService qrCodeService;
+
+    EmailService emailService;
 
     CertificateService certificateService;
 
@@ -64,6 +73,42 @@ public class GatewayEventFacade {
 
     public byte[] generateQRCode(@NonNull final UUID eventCode){
         return qrCodeService.generateQRCode(eventCode);
+    }
+
+    public void sendQRCodeToEmail(@NonNull final UUID eventCode){
+        var event = eventService.findEvent(eventCode);
+        var owner = appUserService.findUser(event.getOwnerCode());
+
+        emailService.sendQRCode(owner.getEmail(), event.getName(), generateQRCode(eventCode));
+
+    }
+
+    @SneakyThrows
+    public void sendStatisticsToEmail(@NonNull final UUID eventCode){
+        var event = eventService.findEvent(eventCode);
+        var owner = appUserService.findUser(event.getOwnerCode());
+
+        int numberOfCheckIns = checkInService.countCheckIns(event);
+
+        StringBuilder csvContent = new StringBuilder();
+        csvContent.append("Email, Nome, Documento, Horario de checkIn, Horario de checkOut \n");
+        for (String[] linha : gerarCsv(event)) {
+            for (String valor : linha) {
+                csvContent.append(valor).append(",");
+            }
+            csvContent.append("\n");
+        }
+
+        emailService.sendStatistics(owner.getEmail(), event.getName(),csvContent.toString() , numberOfCheckIns, event);
+
+    }
+
+    public List<String[]> gerarCsv(@NonNull final Event event) {
+        return checkInService.findCheckInsByEvent(event).stream().map(checkIn -> {
+            var user = checkIn.getAppUser();
+            return new String[]{user.getEmail(), user.getName(), user.getDocument(), checkIn.getCheckInDate().toString(),
+                    checkIn.getCheckOutDate() == null ? "Sem CheckOut" : checkIn.getCheckOutDate().toString()};
+        }).collect(Collectors.toList());
     }
 
 

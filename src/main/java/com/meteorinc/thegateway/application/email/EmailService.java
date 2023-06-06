@@ -1,6 +1,8 @@
 package com.meteorinc.thegateway.application.email;
 
+import com.meteorinc.thegateway.domain.event.Event;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -23,6 +25,48 @@ public class EmailService {
         message.setTo(destiny);
         message.setSubject(subject);
         message.setText(body);
+        javaMailSender.send(message);
+    }
+
+    @SneakyThrows
+    public void sendQRCode(String destiny, final String eventName, byte[] qrCode) {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        final String subject = String.format("QRCode do evento %s",eventName);
+
+        helper.setTo(destiny);
+        helper.setSubject(subject);
+        helper.setText("Olá!\n O codigo do seu evento foi gerado.");
+
+        ByteArrayResource attachment = new ByteArrayResource(qrCode);
+        helper.addAttachment("event_qr_code.png", attachment, "application/png");
+
+        javaMailSender.send(message);
+    }
+
+    @SneakyThrows
+    public void sendStatistics(String destiny, final String eventName, String csv, int numberOfCheckIns, @NonNull final Event event) {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        final String subject = String.format("Estatisticas do evento %s",eventName);
+
+    final String text =
+        "Olá!\n Relatorio do evento.\n"
+            + "Total de checkins: %s \n"
+            + "Começo do evento: %s ";
+
+
+
+
+        helper.setTo(destiny);
+        helper.setSubject(subject);
+        helper.setText(String.format(text, numberOfCheckIns,event.getStartsAt()));
+
+        ByteArrayResource attachment = new ByteArrayResource(csv.getBytes());
+        helper.addAttachment("statistics.csv", attachment, "application/csv");
+
         javaMailSender.send(message);
     }
 

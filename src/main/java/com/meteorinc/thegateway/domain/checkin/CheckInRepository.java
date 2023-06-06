@@ -32,4 +32,8 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
                             + "limit 50",
             nativeQuery = true)
     Optional<List<CheckIn>> findEligibleUsersForCertificateSending();
+
+    int countByEvent(@NonNull final Event event);
+
+    Optional<List<CheckIn>> findByEvent(@NonNull final Event event);
 }

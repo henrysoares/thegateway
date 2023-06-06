@@ -77,7 +77,6 @@ public class CertificateEmitterJob {
         String text = stripper.getText(document);
 
         text = text.replace("{{UserName}}", checkIn.getAppUser().getName())
-                .replace("{{EventDate}}", checkIn.getCheckOutDate().toString())
                 .replace("\r", "").replace("\n","");
 
         PDDocument newDocument = new PDDocument();

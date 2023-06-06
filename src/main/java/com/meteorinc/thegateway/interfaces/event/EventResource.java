@@ -9,29 +9,19 @@ import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
 import com.meteorinc.thegateway.interfaces.event.requests.FireEmailsRequest;
-import com.opencsv.CSVWriter;
 import java.io.*;
 import java.util.List;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.SneakyThrows;
-import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,8 +34,6 @@ public class EventResource {
     GatewayEventFacade gatewayEventFacade;
 
     EmailService emailService;
-
-  private static final String DEST = "C:\\Users\\henry\\OneDrive\\Área de Trabalho\\benio";
 
     @PostMapping
     public ResponseEntity<EventCreationResponse> createEvent(
@@ -71,8 +59,8 @@ public class EventResource {
     }
 
     @GetMapping(value = "/generate-qrcode/{eventCode}", produces = MediaType.IMAGE_PNG_VALUE)
-    public byte[] generateQRCode(@PathVariable("eventCode") UUID eventCode){
-        return gatewayEventFacade.generateQRCode(eventCode);
+    public void generateQRCode(@PathVariable("eventCode") UUID eventCode){
+        gatewayEventFacade.sendQRCodeToEmail(eventCode);
     }
 
 
@@ -122,27 +110,8 @@ public class EventResource {
     }
 
     @GetMapping("/generate-statistics/{eventCode}")
-    public void generateStatistics(@PathVariable("eventCode") UUID eventCode,
-                                   HttpServletResponse response) throws IOException {
-
-        // Define o tipo de conteúdo da resposta como "text/csv"
-        response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=\"data.csv\"");
-
-        // Cria um escritor CSV usando o PrintWriter
-        PrintWriter writer = response.getWriter();
-        CSVWriter csvWriter = new CSVWriter(writer);
-
-        // Escreve os dados CSV
-        String[] header = {"Nome", "Idade"};
-        String[] data1 = {"João", "30"};
-        String[] data2 = {"Maria", "25"};
-        csvWriter.writeNext(header);
-        csvWriter.writeNext(data1);
-        csvWriter.writeNext(data2);
-
-        // Fecha o escritor CSV
-        csvWriter.close();
+    public void generateStatistics(@PathVariable("eventCode") UUID eventCode) {
+        gatewayEventFacade.sendStatisticsToEmail(eventCode);
     }
 
 

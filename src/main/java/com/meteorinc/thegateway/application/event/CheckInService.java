@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor(onConstructor_ = @Autowired)
@@ -34,6 +36,15 @@ public class CheckInService {
 
     CheckInRepository checkInRepository;
 
+
+    public int countCheckIns(@NonNull final Event event){
+        return checkInRepository.countByEvent(event);
+    }
+
+    public List<CheckIn> findCheckInsByEvent(@NonNull final Event event){
+        return checkInRepository.findByEvent(event).orElseThrow(RuntimeException::new);
+    }
+
     public void doCheckIn(@NonNull final AppUser user, @NonNull final Event event, @NonNull final EventUserStateValidation request){
         if(!isOnSameLocation(event, request)){
             throw new CheckInNotValidException("A localização do usuario não bate com a do evento cadastrado.");
@@ -44,7 +55,7 @@ public class CheckInService {
         }
 
         if(checkInRepository.findByAppUserAndEvent(user, event).isPresent()){
-            throw new CheckInNotValidException("Check-in ja realizado.");
+            return;
         }
 
         final var checkIn = CheckIn.builder()
