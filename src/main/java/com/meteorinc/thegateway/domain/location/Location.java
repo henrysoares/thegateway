@@ -3,6 +3,7 @@ package com.meteorinc.thegateway.domain.location;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteorinc.thegateway.domain.event.Event;
+import com.meteorinc.thegateway.infrastructure.util.safeoperation.SafeOperations;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -46,15 +47,17 @@ public class Location {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "location")
     Event event;
 
-    public LocationDTO toDTO() throws JsonProcessingException {
+    public LocationDTO toDTO() {
         final ObjectMapper mapper = new ObjectMapper();
 
+        var metadata = SafeOperations.doOperationAndReturn(() -> mapper.readTree(this.metadata))
+                .ifNotPossible(null);
 
         return LocationDTO.builder()
                 .type(type)
                 .latitude(latitude)
                 .longitude(longitude)
-                .metadata(mapper.readTree(metadata))
+                .metadata(metadata)
                 .build();
     }
 

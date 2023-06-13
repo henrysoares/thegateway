@@ -5,6 +5,9 @@ import com.meteorinc.thegateway.application.GatewayEventFacade;
 import com.meteorinc.thegateway.application.email.EmailService;
 import com.meteorinc.thegateway.domain.event.EventDTO;
 import com.meteorinc.thegateway.domain.event.EventStatus;
+import static com.meteorinc.thegateway.interfaces.RestConstants.AUTHORIZATION_HEADER;
+import static com.meteorinc.thegateway.interfaces.RestConstants.EVENT_CODE_PATH_VARIABLE;
+
 import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import com.meteorinc.thegateway.interfaces.event.requests.EventDetailsRequest;
 import com.meteorinc.thegateway.interfaces.event.requests.EventUserStateValidation;
@@ -23,6 +26,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,19 +41,18 @@ public class EventResource {
 
     @PostMapping
     public ResponseEntity<EventCreationResponse> createEvent(
-            @NonNull @RequestHeader("Authorization") final String token,
-            @RequestBody @NonNull @Valid EventDetailsRequest request){
+            @NonNull @RequestHeader(AUTHORIZATION_HEADER) final String token,
+            @RequestBody @NonNull @Valid final EventDetailsRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(gatewayEventFacade.createEvent(request, token));
     }
 
     @GetMapping("/{eventCode}")
-    public ResponseEntity<EventDTO> findEvent(@PathVariable("eventCode") UUID eventCode)
-            throws JsonProcessingException {
+    public ResponseEntity<EventDTO> findEvent(@PathVariable(EVENT_CODE_PATH_VARIABLE) UUID eventCode) {
         return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findEvent(eventCode));
     }
 
     @GetMapping("/owner")
-    public ResponseEntity<List<EventDTO>> findEvent(@NonNull @RequestHeader("Authorization") final String token)  {
+    public ResponseEntity<List<EventDTO>> findEvent(@NonNull @RequestHeader(AUTHORIZATION_HEADER) final String token) {
         return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findEvents(token));
     }
 
@@ -58,16 +61,16 @@ public class EventResource {
         return ResponseEntity.status(HttpStatus.OK).body(gatewayEventFacade.findAllEvents());
     }
 
-    @GetMapping(value = "/generate-qrcode/{eventCode}", produces = MediaType.IMAGE_PNG_VALUE)
-    public void generateQRCode(@PathVariable("eventCode") UUID eventCode){
+    @GetMapping(value = "/generate-qrcode/{eventCode}")
+    public void sendQRCode(@PathVariable(EVENT_CODE_PATH_VARIABLE) UUID eventCode){
         gatewayEventFacade.sendQRCodeToEmail(eventCode);
     }
 
 
     @PostMapping("/check-in/{eventCode}")
     public ResponseEntity<Void> doCheckIn (
-            @NonNull @RequestHeader("Authorization") final String token,
-            @PathVariable("eventCode") UUID eventCode,
+            @NonNull @RequestHeader(AUTHORIZATION_HEADER) final String token,
+            @PathVariable(EVENT_CODE_PATH_VARIABLE) final UUID eventCode,
             @RequestBody @NonNull final EventUserStateValidation request){
         gatewayEventFacade.doCheckIn(token, eventCode, request);
         return ResponseEntity.ok().build();
@@ -75,8 +78,8 @@ public class EventResource {
 
     @PatchMapping("/check-out/{eventCode}")
     public ResponseEntity<Void> doCheckOut (
-            @NonNull @RequestHeader("Authorization") final String token,
-            @PathVariable("eventCode") UUID eventCode){
+            @NonNull @RequestHeader(AUTHORIZATION_HEADER) final String token,
+            @PathVariable(EVENT_CODE_PATH_VARIABLE) UUID eventCode){
         gatewayEventFacade.doCheckOut(token, eventCode);
         return ResponseEntity.ok().build();
     }
@@ -84,14 +87,14 @@ public class EventResource {
     @PostMapping(value = "/certificate/upload/{eventCode}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Void> uploadCertifiedFile(@RequestParam("file") @NonNull final MultipartFile file,
-                                                    @PathVariable("eventCode") UUID eventCode,
+                                                    @PathVariable(EVENT_CODE_PATH_VARIABLE) final UUID eventCode,
                                                     @NonNull final HttpServletRequest request) {
         gatewayEventFacade.uploadCert(file, eventCode, request);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/certificate/{eventCode}")
-    public ResponseEntity<byte[]> getCertificate(@PathVariable("eventCode") UUID eventCode) {
+    public ResponseEntity<byte[]> getCertificate(@PathVariable(EVENT_CODE_PATH_VARIABLE) UUID eventCode) {
         final var cert = gatewayEventFacade.loadCert(eventCode);
 
         HttpHeaders headers = new HttpHeaders();
@@ -100,13 +103,6 @@ public class EventResource {
         headers.setContentLength(cert.length);
 
         return new ResponseEntity<>(cert, headers, HttpStatus.OK);
-    }
-
-    @PostMapping("/certificate/{eventCode}")
-    public ResponseEntity<Void> fireEmails(@PathVariable("eventCode") UUID eventCode,
-                                           @NonNull @RequestBody final FireEmailsRequest request) {
-        emailService.sendEmail(request.getDummyEmail(),request.getDummySubject(), "Teste");
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/generate-statistics/{eventCode}")

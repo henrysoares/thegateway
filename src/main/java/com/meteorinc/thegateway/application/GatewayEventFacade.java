@@ -25,7 +25,10 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,8 +58,17 @@ public class GatewayEventFacade {
 
     CertificateService certificateService;
 
-    public EventCreationResponse createEvent(@NonNull final EventDetailsRequest eventDetailsRequest, @NonNull final String creatorToken){
-        return eventService.createEvent(eventDetailsRequest, appUserService.findUserByToken(creatorToken).getUserCode());
+    /**
+     * Metodo responsavel por fazer a criação do evento.
+     * @param eventDetailsRequest Request de criação do evento.
+     * @param creatorToken Token do criador.
+     */
+    public EventCreationResponse createEvent(@NonNull final EventDetailsRequest eventDetailsRequest,
+                                             @NonNull final String creatorToken){
+
+        return eventService.createEvent(
+                eventDetailsRequest,
+                appUserService.findUserByToken(creatorToken).getUserCode());
     }
 
     public List<EventDTO> findEvents(@NonNull final String token){
@@ -84,16 +96,20 @@ public class GatewayEventFacade {
     }
 
     @SneakyThrows
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendStatisticsToEmail(@NonNull final UUID eventCode){
         var event = eventService.findEvent(eventCode);
         var owner = appUserService.findUser(event.getOwnerCode());
 
         int numberOfCheckIns = checkInService.countCheckIns(event);
+        //todo: melhor o codigo e utilizar uma lib para manipular o csv.
+        String header = "Email, Nome, Documento, Horario de checkIn, Horario de checkOut, Metadata do usuario. \n";
 
         StringBuilder csvContent = new StringBuilder();
-        csvContent.append("Email, Nome, Documento, Horario de checkIn, Horario de checkOut \n");
-        for (String[] linha : gerarCsv(event)) {
-            for (String valor : linha) {
+        csvContent.append(header);
+        for (String[] line : gerarCsv(event)) {
+            for (String valor : line) {
                 csvContent.append(valor).append(",");
             }
             csvContent.append("\n");
@@ -112,7 +128,14 @@ public class GatewayEventFacade {
     }
 
 
-    public void doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode, @NonNull final EventUserStateValidation request){
+    /**
+     * Metodo responsavel por realizar o check-in do evento.
+     * @param rawToken Token do solicitante.
+     * @param eventCode Codigo do evento (lido pelo QRCODE).
+     * @param request Requisição para fazer o reconhecimento das coordenadas e da network.
+     */
+    public void doCheckIn(@NonNull final String rawToken, @NonNull final UUID eventCode,
+                          @NonNull final EventUserStateValidation request){
 
         final AppUser user = appUserService.findUserByToken(rawToken);
         final Event event = eventService.findEvent(eventCode);
@@ -120,6 +143,11 @@ public class GatewayEventFacade {
         checkInService.doCheckIn(user, event, request);
     }
 
+    /**
+     * Metodo responsavel por realizar o check-out do evento.
+     * @param rawToken Token do solicitante.
+     * @param eventCode Codigo do evento (lido pelo QRCODE).
+     */
     public void doCheckOut(@NonNull final String rawToken, @NonNull final UUID eventCode){
 
         final AppUser user = appUserService.findUserByToken(rawToken);
@@ -128,7 +156,13 @@ public class GatewayEventFacade {
         checkInService.doCheckOut(user, event);
     }
 
-
+    /**
+     * Metodo que faz o upload de um certificado do evento.
+     *
+     * @param eventCode Codigo do evento.
+     * @param file certificado.
+     * @param request request para criação.
+     */
     public void uploadCert(@NonNull final MultipartFile file,
                            @NonNull final UUID eventCode,
                            @NonNull final HttpServletRequest request){
@@ -151,6 +185,12 @@ public class GatewayEventFacade {
         }
     }
 
+    /**
+     * Metodo que faz o carregamento de um certificado de um evento.
+     * @param eventCode Codigo do evento.
+     *
+     * @return Os bytes do certificado.
+     */
     public byte[] loadCert(@NonNull final UUID eventCode){
         try {
             final var event = eventService.findEvent(eventCode);

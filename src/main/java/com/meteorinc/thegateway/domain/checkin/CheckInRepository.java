@@ -13,6 +13,9 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
 
     Optional<CheckIn> findByAppUserAndEvent(@NonNull final AppUser user, @NonNull final Event event);
 
+    /**
+     * Realiza a busca de checkins elegiveis a serem processados.
+     */
     @Query(
       value =
           "select ci.* from check_in ci "

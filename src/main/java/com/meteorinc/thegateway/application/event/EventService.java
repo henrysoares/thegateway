@@ -1,5 +1,6 @@
 package com.meteorinc.thegateway.application.event;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.meteorinc.thegateway.application.event.exceptions.EventException;
 import com.meteorinc.thegateway.application.event.exceptions.EventNotFoundException;
 import com.meteorinc.thegateway.application.user.TokenService;
@@ -21,10 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,8 +42,8 @@ public class EventService {
     /**
      * Faz a criação do evento a partir do objeto {@link EventDetailsRequest}
      *
-     * @param eventDetailsRequest
-     * @return
+     * @param eventDetailsRequest Request do evento.
+     * @return Uma instancia de {@link EventCreationResponse}
      */
     public EventCreationResponse createEvent(@NonNull final EventDetailsRequest eventDetailsRequest, @NonNull final UUID ownerCode){
         try {
@@ -54,7 +52,8 @@ public class EventService {
 
             final Location location = Location.builder()
                     .type(eventDetailsRequest.getLocation().getType())
-                    .metadata(eventDetailsRequest.getLocation().getMetadata().toString())
+                    .metadata(Optional.ofNullable(eventDetailsRequest.getLocation().getMetadata())
+                            .map(JsonNode::toString).orElse(null))
                     .latitude(eventDetailsRequest.getLocation().getLatitude())
                     .longitude(eventDetailsRequest.getLocation().getLongitude())
                     .createdAt(LocalDateTime.now())
@@ -116,6 +115,12 @@ public class EventService {
         eventRepository.saveAll(event);
     }
 
+    /**
+     * Metodo que busta uma lista de eventos a partir de um Usuario.
+     * @param user Usuario a ser procurado.
+     *
+     * @return Uma lista de {@link EventDTO}
+     */
     public List<EventDTO> findEvents(@NonNull final AppUser user){
 
 

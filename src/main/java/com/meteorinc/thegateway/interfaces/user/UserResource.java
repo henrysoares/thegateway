@@ -5,6 +5,7 @@ import com.meteorinc.thegateway.application.user.UserService;
 import com.meteorinc.thegateway.domain.user.AppUser;
 import com.meteorinc.thegateway.domain.user.AppUserDTO;
 import com.meteorinc.thegateway.domain.user.RoleType;
+
 import com.meteorinc.thegateway.interfaces.user.dto.LoginResponse;
 import com.meteorinc.thegateway.interfaces.user.requests.LoginRequest;
 import com.meteorinc.thegateway.interfaces.user.requests.UserRequest;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import static com.meteorinc.thegateway.interfaces.RestConstants.*;
+
 @RequestMapping("/api/gateway/user")
 @RestController
 @AllArgsConstructor(onConstructor_ = @Autowired)
@@ -31,7 +34,7 @@ public class UserResource {
     UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody @NonNull LoginRequest request){
+    public ResponseEntity<LoginResponse> login(@RequestBody @NonNull final LoginRequest request){
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
 
@@ -50,13 +53,13 @@ public class UserResource {
     }
 
     @GetMapping("/{userCode}")
-    public ResponseEntity<AppUserDTO> findUserDetails(@PathVariable("userCode") @NonNull UUID userCode){
+    public ResponseEntity<AppUserDTO> findUserDetails(@PathVariable(USER_CODE_PATH_VARIABLE) @NonNull UUID userCode){
         final var user = userService.findUserDetails(userCode);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @PatchMapping
-    public ResponseEntity<AppUserDTO> updateUser(@NonNull @RequestHeader("Authorization") final String token,
+    public ResponseEntity<AppUserDTO> updateUser(@NonNull @RequestHeader(AUTHORIZATION_HEADER) final String token,
                                          @RequestBody @NonNull UserRequest request){
         final var user = userService.updateUser(request, token).toDTO();
         return ResponseEntity.status(HttpStatus.OK)
@@ -64,7 +67,7 @@ public class UserResource {
     }
 
     @DeleteMapping("/{userCode}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userCode") @NonNull UUID userCode){
+    public ResponseEntity<Void> deleteUser(@PathVariable(USER_CODE_PATH_VARIABLE) @NonNull UUID userCode){
         userService.deleteUser(userCode);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

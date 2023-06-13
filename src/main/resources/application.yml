@@ -26,12 +26,12 @@ spring:
       location: "./certs"
 
 root-user:
-  initialize: false
+  initialize: true
   custom-password: true
   details:
     email: "henrysoares.dev@gmail.com"
     name: "root"
-    password: "test"
+    password: "123"
 
 jwt:
   secret: "TH3GAT3WaY" #ideal seria um config server

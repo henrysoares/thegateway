@@ -20,17 +20,21 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class LocationCreationRequest {
 
+    /** Tipo da locação {@link LocationType} */
     @NotNull
     LocationType type;
 
+    /** Coordenada da latitude do local do evento. */
     @NotNull
     @NotBlank
     String latitude;
 
+    /** Coordenada da longitude do local do evento. */
     @NotNull
     @NotBlank
     String longitude;
 
+    /** Metadata do evento, geralmente onde fica os dados relacionados a network. */
     @NotNull
     @JsonDeserialize(as = ObjectNode.class)
     JsonNode metadata;

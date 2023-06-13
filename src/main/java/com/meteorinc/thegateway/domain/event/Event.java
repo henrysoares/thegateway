@@ -5,6 +5,7 @@ import com.meteorinc.thegateway.application.event.exceptions.EventException;
 import com.meteorinc.thegateway.domain.checkin.CheckIn;
 import com.meteorinc.thegateway.domain.location.Location;
 import com.meteorinc.thegateway.infrastructure.converter.UUIDEntityConverter;
+import com.meteorinc.thegateway.interfaces.event.dto.EventCreationResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -70,6 +71,19 @@ public class Event {
     @OneToOne(mappedBy = "event", cascade = CascadeType.ALL)
     CheckIn checkIn;
 
+    public EventCreationResponse buildResponse(){
+        return EventCreationResponse.builder()
+                .eventName(this.getName())
+                .status(this.getStatus())
+                .eventCode(this.getEventCode())
+                .eventDescription(this.getDescription())
+                .isNetworkValidationEnabled(this.isNetWorkValidationAvailable())
+                .ownerCode(this.getOwnerCode())
+                .startsAt(this.getStartsAt())
+                .finishesAt(this.getFinishesAt())
+                .location(this.getLocation().toDTO())
+                .build();
+    }
 
     public EventDTO toDTO() {
 
